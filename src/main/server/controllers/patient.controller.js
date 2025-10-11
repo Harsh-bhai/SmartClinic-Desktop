@@ -1,55 +1,75 @@
-// src/modules/patient/patient.controller.js
-import {PatientService} from "../services/patient.service.js";
+import * as patientService from "../services/patient.service.js";
 
-export const PatientController = {
-  async create(req, res) {
-    try {
-      const patient = await PatientService.createPatient(req.body);
-      res.status(201).json(patient);
-    } catch (err) {
-      console.error("❌ Create Patient Error:", err);
-      res.status(500).json({ error: "Failed to create patient" });
-    }
-  },
+export async function createPatient(req, res) {
+  try {
+    const data = req.body;
 
-  async getAll(req, res) {
-    try {
-      const all = await PatientService.getAllPatients();
-      res.json(all);
-    } catch (err) {
-      console.error("❌ Get All Patients Error:", err);
-      res.status(500).json({ error: "Failed to fetch patients" });
+    if (!data.name || !data.phone || !data.gender || !data.age) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
     }
-  },
 
-  async getById(req, res) {
-    try {
-      const patient = await PatientService.getPatientById(req.params.id);
-      if (!patient) return res.status(404).json({ error: "Patient not found" });
-      res.json(patient);
-    } catch (err) {
-      console.error("❌ Get Patient By ID Error:", err);
-      res.status(500).json({ error: "Failed to fetch patient" });
-    }
-  },
+    const patient = await patientService.createPatient(data);
+    res.status(201).json({ success: true, patient });
+  } catch (error) {
+    console.error("Error creating patient:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
 
-  async update(req, res) {
-    try {
-      const patient = await PatientService.updatePatient(req.params.id, req.body);
-      res.json(patient);
-    } catch (err) {
-      console.error("❌ Update Patient Error:", err);
-      res.status(500).json({ error: "Failed to update patient" });
-    }
-  },
+export async function getAllPatients(req, res) {
+  try {
+    const patients = await patientService.getAllPatients();
+    res.json({ success: true, patients });
+  } catch (error) {
+    console.error("Error fetching patients:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
 
-  async delete(req, res) {
-    try {
-      await PatientService.deletePatient(req.params.id);
-      res.json({ success: true });
-    } catch (err) {
-      console.error("❌ Delete Patient Error:", err);
-      res.status(500).json({ error: "Failed to delete patient" });
+export async function getPatientById(req, res) {
+  try {
+    const { id } = req.params;
+    const patient = await patientService.getPatientById(id);
+
+    if (!patient) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
     }
-  },
-};
+
+    res.json({ success: true, patient });
+  } catch (error) {
+    console.error("Error fetching patient:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
+export async function updatePatient(req, res) {
+  try {
+    const { id } = req.params;
+    const updated = await patientService.updatePatient(id, req.body);
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    res.json({ success: true, patient: updated });
+  } catch (error) {
+    console.error("Error updating patient:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
+export async function deletePatient(req, res) {
+  try {
+    const { id } = req.params;
+    const deleted = await patientService.deletePatient(id);
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    res.json({ success: true, message: "Patient deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting patient:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}

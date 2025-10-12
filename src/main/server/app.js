@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
-import patientRoutes from "./routes/patient.routes";
+import patientRoutes from "./routes/patient.route.js";
+import visitsRoutes from "./routes/visit.route.js";
 import errorHandler from "./middlewares/errorHandler";
 import { db } from "./utils/drizzle";
 import {patients } from "./drizzle/schema";
@@ -11,7 +12,9 @@ export const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 // routes
+app.use("/api/visits", visitsRoutes);
 app.use("/api/patients", patientRoutes);
 app.get("/api/test-insert", async (req, res) => {
   try {

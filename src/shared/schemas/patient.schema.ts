@@ -1,32 +1,18 @@
 import { z } from "zod";
 
-// Medicine Schema
-export const medicineSchema = z.object({
-  name: z.string(),
-  dose: z.string(),
-  frequency: z.array(z.string()),
-  duration: z.string(),
-  remarks: z.string(),
+export const patientInsertSchema = z.object({
+  id: z.string().uuid({ version: "v4" }).optional(),
+  name: z.string().min(1, "Name is required"),
+  age: z.number().int().min(0, "Age must be positive"),
+  gender: z.enum(["Male", "Female", "Other"]),
+  phone: z.string().min(5, "Phone number required"),
+  address: z.string().min(1, "Address required"),
 });
 
-// Patient Schema
-export const patientSchema = z.object({
-  name: z.string(),
-  age: z.int(),
-  medicalHistory: z.string(),
-  lifestyle: z.string(),
-  medicines: z.array(medicineSchema).optional(),
+export const patientSelectSchema = patientInsertSchema.extend({
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
 });
 
-// PrescriptionState Schema
-export const prescriptionStateSchema = z.object({
-  activeTab: z.enum(["patient", "medicines"]),
-  patient: patientSchema,
-  medicines: z.array(medicineSchema),
-  editingIndex: z.number().nullable(),
-});
-
-// ✅ Types inferred from schemas
-export type Medicine = z.infer<typeof medicineSchema>;
-export type Patient = z.infer<typeof patientSchema>;
-export type PrescriptionState = z.infer<typeof prescriptionStateSchema>;
+export type PatientInsert = z.infer<typeof patientInsertSchema>;
+export type PatientSelect = z.infer<typeof patientSelectSchema>;

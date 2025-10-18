@@ -11,6 +11,7 @@ import {
   IconHelp,
   IconInnerShadowTop,
   IconListDetails,
+  IconMedicineSyrup,
   IconReport,
   IconSearch,
   IconSettings,
@@ -77,6 +78,11 @@ const data = {
       title: "Messages",
       url: "/messages",
       icon: IconUsers,
+    },
+    {
+      title: "Medicine Inventory",
+      url: "/medicine-inventory",
+      icon: IconMedicineSyrup,
     },
   ],
   navClouds: [

@@ -1,11 +1,10 @@
-import { JSX } from 'react'
 import './App.css'
 import Dashboard from './components/Dashboard'
 import { ThemeProvider } from './components/provider/ThemeProvider'
 // import AppRoutes from "./AppRoutes";
 // import { ModeToggle } from "./components/ModeToggle";
 
-function App(): JSX.Element {
+function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       {/* <ModeToggle /> */}

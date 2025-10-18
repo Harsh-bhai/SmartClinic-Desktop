@@ -2,12 +2,17 @@ import * as medicineService from "../services/medicineInventory.service.js";
 
 export async function createMedicine(req, res) {
   try {
-    const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ success: false, message: "Medicine name is required" });
-    }
-
     const created = await medicineService.createMedicine(req.body);
+    res.status(201).json({ success: true, data: created });
+  } catch (err) {
+    console.error("Error creating medicine:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
+export async function createMedicinesByBulk(req, res) {
+  try {
+    const created = await medicineService.createMedicinesByBulk(req.body);
     res.status(201).json({ success: true, data: created });
   } catch (err) {
     console.error("Error creating medicine:", err);
@@ -60,8 +65,8 @@ export async function updateMedicine(req, res) {
 export async function deleteMedicine(req, res) {
   try {
     const { id } = req.params;
-    const result = await medicineService.deleteMedicine(id);
-    res.json(result);
+    await medicineService.deleteMedicine(id);
+    return res.status(200).json({ success: true, message: "Medicine Deleted" });
   } catch (err) {
     console.error("Error deleting medicine:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });

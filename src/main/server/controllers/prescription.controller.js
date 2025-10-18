@@ -1,13 +1,13 @@
-import * as visitsService from "../services/visits.service.js";
+import * as prescriptionService from "../services/prescription.service.js";
 
-export async function createVisit(req, res) {
+export async function createPrescription(req, res) {
   try {
     const body = req.body;
     if (!body || !body.patientId) {
       return res.status(400).json({ success: false, message: "patientId is required" });
     }
 
-    const created = await visitsService.createVisit(body);
+    const created = await prescriptionService.createPrescription(body);
     res.status(201).json({ success: true, data: created });
   } catch (err) {
     console.error("Error creating visit:", err);
@@ -16,66 +16,66 @@ export async function createVisit(req, res) {
 }
 
 
-export async function getAllVisits(req, res) {
+export async function getAllPrescription(req, res) {
   try {
-    const all = await visitsService.getAllVisits();
+    const all = await prescriptionService.getAllPrescriptions();
     res.json({ success: true, data: all });
   } catch (err) {
-    console.error("Error fetching visits:", err);
+    console.error("Error fetching Prescription:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }
 
 
-export async function getVisitsByPatient(req, res) {
+export async function getPrescriptionsByPatient(req, res) {
   try {
     const { patientId } = req.params;
     if (!patientId) return res.status(400).json({ success: false, message: "patientId required" });
 
-    const visits = await visitsService.getVisitsByPatient(patientId);
+    const visits = await prescriptionService.getPrescriptionsByPatient(patientId);
     res.json({ success: true, data: visits });
   } catch (err) {
-    console.error("Error fetching patient visits:", err);
+    console.error("Error fetching patient Prescription:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }
 
 
-export async function getVisitById(req, res) {
+export async function getPrescriptionById(req, res) {
   try {
     const { id } = req.params;
-    const visit = await visitsService.getVisitById(id);
-    if (!visit) return res.status(404).json({ success: false, message: "Visit not found" });
+    const visit = await prescriptionService.getPrescriptionById(id);
+    if (!visit) return res.status(404).json({ success: false, message: "Prescription not found" });
 
     res.json({ success: true, data: visit });
   } catch (err) {
-    console.error("Error fetching visit:", err);
+    console.error("Error fetching Prescription:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }
 
 
-export async function updateVisit(req, res) {
+export async function updatePrescription(req, res) {
   try {
     const { id } = req.params;
-    const updated = await visitsService.updateVisit(id, req.body);
-    if (!updated) return res.status(404).json({ success: false, message: "Visit not found" });
+    const updated = await prescriptionService.updatePrescription(id, req.body);
+    if (!updated) return res.status(404).json({ success: false, message: "Prescription not found" });
 
     res.json({ success: true, data: updated });
   } catch (err) {
-    console.error("Error updating visit:", err);
+    console.error("Error updating Prescription:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }
 
 
-export async function deleteVisit(req, res) {
+export async function deletePrescription(req, res) {
   try {
     const { id } = req.params;
-    const result = await visitsService.deleteVisit(id);
+    const result = await prescriptionService.deletePrescription(id);
     res.json(result);
   } catch (err) {
-    console.error("Error deleting visit:", err);
+    console.error("Error deleting Prescription:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }

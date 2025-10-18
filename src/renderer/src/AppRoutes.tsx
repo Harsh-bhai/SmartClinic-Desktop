@@ -8,6 +8,7 @@ import FormSettingsPage from "./pages/FormSettingsPage"
 import MessagesPage from "./pages/MessagesPage"
 import HomePage from "./pages/HomePage"
 import LoginPage from "./pages/LoginPage"
+import MedicineInventoryPage from "./features/medicineInventory/MedicineInventoryPage"
 
 const AppRoutes = () => {
   return (
@@ -21,6 +22,7 @@ const AppRoutes = () => {
         <Route path="/form-settings" element={<FormSettingsPage />} />
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/medicine-inventory" element={<MedicineInventoryPage />} />
     </Routes>
   )
 }

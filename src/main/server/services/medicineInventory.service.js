@@ -11,7 +11,6 @@ export async function createMedicine(data) {
     type: data.type || null,
     strength: data.strength || null,
     manufacturer: data.manufacturer || null,
-    stock: data.stock ?? 0,
     notes: data.notes || null,
   };
 
@@ -19,12 +18,34 @@ export async function createMedicine(data) {
   return result[0];
 }
 
+export async function createMedicinesByBulk(dataArray) {
+  dataArray.forEach(async (data) => {
+    const id = randomUUID();
+    const row = {
+      id,
+      name: data.name,
+      type: data.type || null,
+      strength: data.strength || null,
+      manufacturer: data.manufacturer || null,
+      notes: data.notes || null,
+    };
+    await db.insert(medicineInventory).values(row).returning();
+  });
+  return { success: true, message: "Medicines created successfully" };
+}
+
 export async function getAllMedicines() {
-  return await db.select().from(medicineInventory).orderBy(medicineInventory.createdAt);
+  return await db
+    .select()
+    .from(medicineInventory)
+    .orderBy(medicineInventory.createdAt);
 }
 
 export async function getMedicineById(id) {
-  const result = await db.select().from(medicineInventory).where(eq(medicineInventory.id, id));
+  const result = await db
+    .select()
+    .from(medicineInventory)
+    .where(eq(medicineInventory.id, id));
   return result[0] || null;
 }
 
@@ -34,7 +55,6 @@ export async function updateMedicine(id, data) {
     type: data.type,
     strength: data.strength,
     manufacturer: data.manufacturer,
-    stock: data.stock,
     notes: data.notes,
     updatedAt: new Date().toISOString(),
   };
@@ -50,5 +70,5 @@ export async function updateMedicine(id, data) {
 
 export async function deleteMedicine(id) {
   await db.delete(medicineInventory).where(eq(medicineInventory.id, id));
-  return { success: true, message: "Medicine deleted successfully" };
+  return ;
 }

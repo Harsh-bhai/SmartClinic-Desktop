@@ -7,6 +7,7 @@ import {
   updateMedicine,
   deleteMedicine,
 } from "../controllers/medicineInventory.controller.js";
+import { deleteAllMedicine, deleteMedicineByBulk } from "../services/medicineInventory.service.js";
 
 const router = express.Router();
 
@@ -16,5 +17,7 @@ router.get("/", getAllMedicines);
 router.get("/:id", getMedicineById);
 router.put("/:id", updateMedicine);
 router.delete("/:id", deleteMedicine);
+router.post("/bulk", deleteMedicineByBulk);
+router.delete("/all", deleteAllMedicine);
 
 export default router;

@@ -7,6 +7,8 @@ import {
   deleteMedicineApi,
   createMedicinesByBulkApi,
   Medicine,
+  deleteMedicineByBulkApi,
+  deleteAllMedicinesApi,
 } from "./medicineInventoryApi";
 
 interface MedicineInventoryState {
@@ -69,7 +71,7 @@ export const createMedicine = createAsyncThunk(
 );
 
 export const createMedicinesByBulk = createAsyncThunk(
-  "medicineInventory/createArray",
+  "medicineInventory/createBulk",
   async (medicineArray: Medicine[], { rejectWithValue }) => {
     try {
       const response = await createMedicinesByBulkApi(medicineArray);
@@ -85,7 +87,7 @@ export const createMedicinesByBulk = createAsyncThunk(
 export const updateMedicine = createAsyncThunk(
   "medicineInventory/update",
   async (
-    { id, data }: { id: string; data: Partial<Medicine> },
+    { id, data }: { id: string; data: Medicine },
     { rejectWithValue },
   ) => {
     try {
@@ -113,11 +115,43 @@ export const deleteMedicine = createAsyncThunk(
   },
 );
 
+export const deleteMedicineByBulk = createAsyncThunk(
+  "medicineInventory/deleteBulk",
+  async (data: string[], { rejectWithValue }) => {
+    try {
+      const response = await deleteMedicineByBulkApi(data!);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || "Failed to delete medicine",
+      );
+    }
+  },
+);
+
+export const deleteAllMedicines = createAsyncThunk(
+  "medicineInventory/deleteAll",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await deleteAllMedicinesApi();
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || "Failed to delete medicine",
+      );
+    }
+  },
+);
+
 // Slice
 const medicineInventorySlice = createSlice({
   name: "medicineInventory",
   initialState,
-  reducers: {},
+  reducers: {
+    setSelectedMedicine: (state, action: PayloadAction<Medicine | null>) => {
+      state.selectedMedicine = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Fetch all
@@ -226,8 +260,48 @@ const medicineInventorySlice = createSlice({
       .addCase(deleteMedicine.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      });
+      })
+      // Delete by Bulk
+      .addCase(deleteMedicineByBulk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        deleteMedicineByBulk.fulfilled,
+        (state, action: PayloadAction<string[]>) => {
+          state.loading = false;
+          
+          state.medicines = state.medicines.filter(
+            (m) => !action.payload.includes(m.id!),
+          );
+        },
+      )
+      .addCase(deleteMedicineByBulk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      }
+    )
+      // Delete All
+      .addCase(deleteAllMedicines.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        deleteAllMedicines.fulfilled,
+        (state) => {
+          state.loading = false;
+          
+          state.medicines = [];
+        },
+      )
+      .addCase(deleteAllMedicines.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      }
+    );
   },
 });
+
+export const { setSelectedMedicine } = medicineInventorySlice.actions;
 
 export default medicineInventorySlice.reducer;

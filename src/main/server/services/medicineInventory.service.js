@@ -9,8 +9,9 @@ export async function createMedicine(data) {
     id,
     name: data.name,
     type: data.type || null,
-    strength: data.strength || null,
+    expectedDose: data.expectedDose || null,
     manufacturer: data.manufacturer || null,
+    relatedDisease: data.relatedDisease || null,
     notes: data.notes || null,
   };
 
@@ -25,8 +26,9 @@ export async function createMedicinesByBulk(dataArray) {
       id,
       name: data.name,
       type: data.type || null,
-      strength: data.strength || null,
+      expectedDose: data.expectedDose || null,
       manufacturer: data.manufacturer || null,
+      relatedDisease: data.relatedDisease || null,
       notes: data.notes || null,
     };
     await db.insert(medicineInventory).values(row).returning();
@@ -53,8 +55,9 @@ export async function updateMedicine(id, data) {
   const updated = {
     name: data.name,
     type: data.type,
-    strength: data.strength,
+    expectedDose: data.expectedDose,
     manufacturer: data.manufacturer,
+    relatedDisease: data.relatedDisease,
     notes: data.notes,
     updatedAt: new Date().toISOString(),
   };
@@ -70,5 +73,15 @@ export async function updateMedicine(id, data) {
 
 export async function deleteMedicine(id) {
   await db.delete(medicineInventory).where(eq(medicineInventory.id, id));
-  return ;
+  return;
+}
+export async function deleteMedicineByBulk(data) {
+  data.forEach(async (id) => {
+    await db.delete(medicineInventory).where(eq(medicineInventory.id, id));
+  });
+  return;
+}
+export async function deleteAllMedicine() {
+  await db.delete(medicineInventory);
+  return;
 }

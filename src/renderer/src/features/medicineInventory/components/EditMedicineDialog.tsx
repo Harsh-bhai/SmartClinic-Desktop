@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { createMedicine } from "../medicineInventorySlice";
+import { useEffect, useState } from "react";
+import { updateMedicine } from "../medicineInventorySlice";
 import {
   Dialog,
   DialogContent,
@@ -20,14 +20,19 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppDispatch } from "@renderer/app/hooks";
+import { Medicine } from "../medicineInventoryApi";
 
-export default function CreateMedicineDialog({
-  open,
-  setOpen,
-}: {
+interface EditMedicineDialogProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-}) {
+  medicine: Medicine
+}
+
+export default function EditMedicineDialog({
+  open,
+  setOpen,
+  medicine,
+}: EditMedicineDialogProps) {
   const dispatch = useAppDispatch();
 
   const [formData, setFormData] = useState({
@@ -39,8 +44,22 @@ export default function CreateMedicineDialog({
     notes: "",
   });
 
+  // prefill form when medicine changes
+  useEffect(() => {
+    if (medicine) {
+      setFormData({
+        name: medicine.name || "",
+        type: medicine.type || "",
+        relatedDisease: medicine.relatedDisease || "",
+        expectedDose: medicine.expectedDose || "",
+        manufacturer: medicine.manufacturer || "",
+        notes: medicine.notes || "",
+      });
+    }
+  }, [medicine]);
+
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -50,15 +69,8 @@ export default function CreateMedicineDialog({
   };
 
   const handleSubmit = async () => {
-    await dispatch(createMedicine(formData));
-    setFormData({
-      name: "",
-      type: "",
-      relatedDisease: "",
-      expectedDose: "",
-      manufacturer: "",
-      notes: "",
-    });
+    if (!medicine?.id) return;
+    await dispatch(updateMedicine({ id: medicine.id, data: formData }));
     setOpen(false);
   };
 
@@ -67,7 +79,7 @@ export default function CreateMedicineDialog({
       <DialogContent className="min-w-4xl p-8 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold tracking-tight">
-            Add New Medicine
+            Edit Medicine
           </DialogTitle>
         </DialogHeader>
 
@@ -87,7 +99,7 @@ export default function CreateMedicineDialog({
         </div>
 
         {/* Two-column layout */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-6 ">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-6">
           {/* Type */}
           <div className="flex flex-col space-y-2">
             <Label htmlFor="type" className="text-base font-medium">
@@ -107,7 +119,7 @@ export default function CreateMedicineDialog({
                   "Injection",
                   "Brush",
                 ].map((type) => (
-                  <SelectItem key={type} value={type}>
+                  <SelectItem key={type} value={type.toLowerCase()}>
                     {type}
                   </SelectItem>
                 ))}
@@ -170,7 +182,7 @@ export default function CreateMedicineDialog({
               name="notes"
               value={formData.notes}
               onChange={handleChange}
-              placeholder="Add special instructions (e.g. avoid spicy food, take after meal, not for children below 12)"
+              placeholder="Add special instructions (e.g. avoid spicy food, take after meal)"
               className="min-h-[100px] text-base resize-none"
             />
           </div>
@@ -182,7 +194,7 @@ export default function CreateMedicineDialog({
             onClick={handleSubmit}
             className="px-8 py-2 text-base font-medium"
           >
-            Save Medicine
+            Update Medicine
           </Button>
         </div>
       </DialogContent>

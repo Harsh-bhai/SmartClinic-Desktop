@@ -36,8 +36,9 @@ export const medicineInventory = sqliteTable("medicine_inventory", {
   id: text("id").primaryKey().notNull(),
   name: text("name").notNull(),
   type: text("type"), // e.g. Tablet, Syrup
-  strength: text("strength"),
+  expectedDose: text("expected_dose"),
   manufacturer: text("manufacturer"),
+  relatedDisease: text("related_disease"),
   notes: text("notes"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),

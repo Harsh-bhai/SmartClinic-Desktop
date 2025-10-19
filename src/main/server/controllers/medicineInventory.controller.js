@@ -72,3 +72,23 @@ export async function deleteMedicine(req, res) {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }
+export async function deleteMedicineByBulk(req, res) {
+  try {
+    const { data } = req.params;
+    await medicineService.deleteMedicineByBulk(data);
+    return res.status(200).json({ success: true, message: "Multiple Medicine Deleted" });
+  } catch (err) {
+    console.error("Error deleting medicine:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
+export async function deleteMedicineByBulk(req, res) {
+  try {
+    await medicineService.deleteAllMedicine();
+    return res.status(200).json({ success: true, message: "All Medicine Deleted" });
+  } catch (err) {
+    console.error("Error deleting medicine:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}

@@ -6,8 +6,9 @@ export interface Medicine {
   id?: string;
   name: string;
   type?: string;
-  strength?: string;
+  expectedDose?: string;
   manufacturer?: string;
+  relatedDisease?: string;
   notes?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -46,5 +47,13 @@ export const updateMedicineApi = async (id: string, data: Partial<Medicine>) => 
 // ❌ 6️⃣ Delete a medicine by ID
 export const deleteMedicineApi = async (id: string) => {
   const response = await axios.delete(`${BASE_URL}/${id}`);
+  return response.data.data;
+};
+export const deleteMedicineByBulkApi = async (data: string[] ) => {
+  const response = await axios.post(`${BASE_URL}/bulk`, data);
+  return response.data.data;
+};
+export const deleteAllMedicinesApi = async () => {
+  const response = await axios.delete(`${BASE_URL}/all`);
   return response.data.data;
 };

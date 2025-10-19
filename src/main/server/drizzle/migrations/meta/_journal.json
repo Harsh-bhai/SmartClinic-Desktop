@@ -15,6 +15,13 @@
       "when": 1760776629407,
       "tag": "0001_fancy_vengeance",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1760847650749,
+      "tag": "0002_bored_boomerang",
+      "breakpoints": true
     }
   ]
 }

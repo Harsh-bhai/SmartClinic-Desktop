@@ -16,6 +16,10 @@ import { ReactNode, useState } from "react";
 interface ConfirmDialogProps {
   /** Button or custom trigger UI */
   trigger?: ReactNode;
+  /** Dialog open state */
+  open: boolean;
+  /** Called when open state changes */
+  setOpen: (open: boolean) => void;
   /** Title text */
   title: string;
   /** Optional description text */
@@ -32,6 +36,8 @@ interface ConfirmDialogProps {
 
 export default function ConfirmDialog({
   trigger,
+  open,
+  setOpen,
   title,
   description,
   onConfirm,
@@ -39,7 +45,7 @@ export default function ConfirmDialog({
   cancelLabel = "Cancel",
   destructive = false,
 }: ConfirmDialogProps) {
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
 
   return (
     //FIXME - dialog is not opening may be due to setopen is never true

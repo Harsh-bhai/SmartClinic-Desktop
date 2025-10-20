@@ -59,8 +59,6 @@ export const createMedicine = createAsyncThunk(
   async (medicineData: Medicine, { rejectWithValue }) => {
     try {
       const response = await createMedicineApi(medicineData);
-      console.log(response, "here");
-
       return response;
     } catch (error: any) {
       return rejectWithValue(
@@ -119,8 +117,8 @@ export const deleteMedicineByBulk = createAsyncThunk(
   "medicineInventory/deleteBulk",
   async (data: string[], { rejectWithValue }) => {
     try {
-      const response = await deleteMedicineByBulkApi(data!);
-      return response;
+      await deleteMedicineByBulkApi(data!);
+      return data;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data || "Failed to delete medicine",
@@ -269,6 +267,8 @@ const medicineInventorySlice = createSlice({
       .addCase(
         deleteMedicineByBulk.fulfilled,
         (state, action: PayloadAction<string[]>) => {
+          console.log(action.payload, "here");
+          
           state.loading = false;
           
           state.medicines = state.medicines.filter(

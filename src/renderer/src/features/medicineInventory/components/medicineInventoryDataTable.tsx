@@ -21,13 +21,11 @@ import {
   ChevronRightIcon,
   EllipsisIcon,
   TrashIcon,
-  ListFilterIcon,
   CircleXIcon,
   Columns3Icon,
   CopyIcon,
   PencilIcon,
   PlusCircleIcon,
-  Trash2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -81,6 +79,19 @@ export default function DataTable({ medicines }: { medicines: Medicine[] }) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [open, setOpen] = useState<boolean>(false);
   const [openEdit, setOpenEdit] = useState<boolean>(false);
+  const [openDelete, setOpenDelete] = useState<boolean>(false);
+  const [openDeleteAll, setOpenDeleteAll] = useState<boolean>(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+
+  const handleOpenDelete = () => {
+    const ids = selectedRows.map((r) => r.original.id!);
+    if (ids.length > 0) {
+      setSelectedIds(ids);
+      setOpenDelete(true);
+    }
+  };
+
   const selectedMedicine = useAppSelector(
     (state) => state.medicineInventory.selectedMedicine,
   );
@@ -164,6 +175,12 @@ export default function DataTable({ medicines }: { medicines: Medicine[] }) {
     },
   ];
 
+  const globalFilterFn: FilterFn<Item> = (row, _, filterValue) => {
+    const content =
+      `${row.original.name} ${row.original.manufacturer} ${row.original.type} ${row.original.relatedDisease}`.toLowerCase();
+    return content.includes((filterValue ?? "").toLowerCase());
+  };
+
   const table = useReactTable({
     data: medicines,
     columns: [
@@ -184,6 +201,7 @@ export default function DataTable({ medicines }: { medicines: Medicine[] }) {
           : col,
       ),
     ],
+    globalFilterFn: globalFilterFn,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
@@ -192,8 +210,15 @@ export default function DataTable({ medicines }: { medicines: Medicine[] }) {
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     getFilteredRowModel: getFilteredRowModel(),
-    state: { sorting, pagination, columnFilters, columnVisibility },
+    state: {
+      sorting,
+      pagination,
+      columnFilters,
+      columnVisibility,
+      globalFilter,
+    },
   });
+  const selectedRows = table.getSelectedRowModel().rows;
 
   return (
     <div className="space-y-4">
@@ -210,24 +235,16 @@ export default function DataTable({ medicines }: { medicines: Medicine[] }) {
         <div className="relative">
           <Input
             ref={inputRef}
-            className={cn(
-              "peer min-w-lg ps-9",
-              Boolean(table.getColumn("name")?.getFilterValue()) && "pe-9",
-            )}
-            value={(table.getColumn("name")?.getFilterValue() ?? "") as string}
-            onChange={(e) =>
-              table.getColumn("name")?.setFilterValue(e.target.value)
-            }
-            placeholder="Search by Name/ Manufacturer/ Type/ Disease..."
+            className={cn("peer min-w-lg ps-9", globalFilter && "pe-9")}
+            value={globalFilter ?? ""}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            placeholder="Search by Name / Manufacturer / Type / Disease..."
           />
-          <div className="absolute inset-y-0 start-0 flex items-center ps-3 text-muted-foreground/80">
-            <ListFilterIcon size={16} />
-          </div>
-          {Boolean(table.getColumn("name")?.getFilterValue()) && (
+          {Boolean(globalFilter) && (
             <button
               className="absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground/80 hover:text-foreground"
               onClick={() => {
-                table.getColumn("name")?.setFilterValue("");
+                setGlobalFilter("");
                 inputRef.current?.focus();
               }}
             >
@@ -264,58 +281,54 @@ export default function DataTable({ medicines }: { medicines: Medicine[] }) {
 
           {/* 🗑️ Show bulk delete if any selected */}
           {table.getSelectedRowModel().rows.length > 0 && (
-            <Button
-              variant="destructive"
-              onClick={() => {
-                const ids = table
-                  .getSelectedRowModel()
-                  .rows.map((r) => r.original.id!);
-
-                <ConfirmDialog
-                  trigger={
-                    <Button
-                      variant="destructive"
-                      // disabled={!ids.length}
-                      className="flex items-center gap-2"
-                    >
-                      <Trash2 size={16} />
-                      Delete Selected
-                    </Button>
-                  }
-                  title={`Delete ${ids.length} selected medicine${ids.length > 1 ? "s" : ""}?`}
-                  description="This action cannot be undone. All selected medicines will be permanently deleted."
-                  confirmLabel="Yes, Delete"
-                  destructive
-                  onConfirm={() => {
-                    // dispatch(deleteMedicineByBulk(ids));
-                    // table.toggleAllRowsSelected(false);
-                    console.log("ajsflaksdj");
-                    
-                  }}
-                />;
-              }}
-              className="flex items-center gap-2"
-            >
-              <TrashIcon size={16} />
-              Delete Selected
-            </Button>
+            <>
+              <Button
+                variant="destructive"
+                onClick={handleOpenDelete}
+                className="flex items-center gap-2"
+              >
+                <TrashIcon size={16} />
+                Delete Selected
+              </Button>
+              <ConfirmDialog
+                open={openDelete}
+                setOpen={setOpenDelete}
+                title={`Delete ${selectedIds.length} selected medicine${selectedIds.length > 1 ? "s" : ""}?`}
+                description="This action cannot be undone. All selected medicines will be permanently deleted."
+                confirmLabel="Yes, Delete"
+                destructive
+                onConfirm={() => {
+                  dispatch(deleteMedicineByBulk(selectedIds));
+                  table.toggleAllRowsSelected(false);
+                }}
+              />
+            </>
           )}
+
+          <Button
+            variant="outline"
+            className="text-red-600 border-red-600 hover:bg-red-50"
+            onClick={() => setOpenDeleteAll(true)}
+          >
+            <TrashIcon size={16} /> Delete All
+          </Button>
 
           {/* ➕ Add new medicine */}
           <Button onClick={() => setOpen(true)}>
             <PlusCircleIcon size={16} /> Add Medicine
           </Button>
-          <Button
-            variant="outline"
-            className="text-red-600 border-red-600 hover:bg-red-50"
-            onClick={() => {
-              if (confirm("Are you sure you want to delete all medicines?")) {
-                dispatch(deleteAllMedicines());
-              }
+          <ConfirmDialog
+            open={openDeleteAll}
+            setOpen={setOpenDeleteAll}
+            title={`Delete All Medicines`}
+            description="This action cannot be undone. All the medicines will be permanently deleted."
+            confirmLabel="Yes, Delete"
+            destructive
+            onConfirm={() => {
+              dispatch(deleteAllMedicines());
+              table.toggleAllRowsSelected(false);
             }}
-          >
-            <TrashIcon size={16} /> Delete All
-          </Button>
+          />
         </div>
       </div>
 

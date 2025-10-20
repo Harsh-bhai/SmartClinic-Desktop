@@ -20,6 +20,7 @@ export async function createMedicine(data) {
 }
 
 export async function createMedicinesByBulk(dataArray) {
+  
   dataArray.forEach(async (data) => {
     const id = randomUUID();
     const row = {

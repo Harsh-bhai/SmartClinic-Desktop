@@ -50,7 +50,7 @@ export const deleteMedicineApi = async (id: string) => {
   return response.data.data;
 };
 export const deleteMedicineByBulkApi = async (data: string[] ) => {
-  const response = await axios.post(`${BASE_URL}/bulk`, data);
+  const response = await axios.post(`${BASE_URL}/bulkdelete`, data);
   return response.data.data;
 };
 export const deleteAllMedicinesApi = async () => {

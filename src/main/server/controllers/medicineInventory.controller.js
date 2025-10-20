@@ -74,8 +74,7 @@ export async function deleteMedicine(req, res) {
 }
 export async function deleteMedicineByBulk(req, res) {
   try {
-    const { data } = req.params;
-    await medicineService.deleteMedicineByBulk(data);
+    await medicineService.deleteMedicineByBulk(req.body);
     return res.status(200).json({ success: true, message: "Multiple Medicine Deleted" });
   } catch (err) {
     console.error("Error deleting medicine:", err);
@@ -83,7 +82,7 @@ export async function deleteMedicineByBulk(req, res) {
   }
 }
 
-export async function deleteMedicineByBulk(req, res) {
+export async function deleteAllMedicine(req, res) {
   try {
     await medicineService.deleteAllMedicine();
     return res.status(200).json({ success: true, message: "All Medicine Deleted" });

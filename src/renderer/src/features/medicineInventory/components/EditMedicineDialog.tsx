@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { updateMedicine } from "../medicineInventorySlice";
+import { updateMedicine } from "@/features/medicineInventory";
 import {
   Dialog,
   DialogContent,

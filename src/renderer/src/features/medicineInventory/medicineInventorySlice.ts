@@ -9,7 +9,7 @@ import {
   Medicine,
   deleteMedicineByBulkApi,
   deleteAllMedicinesApi,
-} from "./medicineInventoryApi";
+} from "@/features/medicineInventory";
 
 interface MedicineInventoryState {
   medicines: Medicine[];

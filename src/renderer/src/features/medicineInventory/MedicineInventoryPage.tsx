@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { fetchAllMedicines } from "./medicineInventorySlice";
+import { fetchAllMedicines } from "@/features/medicineInventory";
 
 
 import MedicineList from "./components/MedicineList";

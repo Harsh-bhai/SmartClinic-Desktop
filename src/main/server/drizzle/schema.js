@@ -9,10 +9,10 @@ export const patients = sqliteTable("patients", {
   name: text("name").notNull(),
   age: integer("age").notNull(),
   gender: text("gender").notNull(),
-  phone: text("phone").notNull(),
-  address: text("address").notNull(),
   paidStatus: integer("paid_status", {mode:"boolean"}).notNull().default(0),
   paid: integer("paid").notNull().default(0),
+  phone: text("phone"),
+  address: text("address"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

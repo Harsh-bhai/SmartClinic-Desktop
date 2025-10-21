@@ -3,11 +3,6 @@ import * as patientService from "../services/patient.service.js";
 export async function createPatient(req, res) {
   try {
     const data = req.body;
-
-    if (!data.name || !data.phone || !data.gender || !data.age) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
-    }
-
     const patient = await patientService.createPatient(data);
     res.status(201).json({ success: true, patient });
   } catch (error) {
@@ -68,6 +63,21 @@ export async function deletePatient(req, res) {
     }
 
     res.json({ success: true, message: "Patient deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting patient:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+}
+
+export async function deletePatientByBulk(req, res) {
+  try {
+    const deleted = await patientService.deletePatientByBulk(req.body);
+
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    res.json({ success: true, message: "Multiple Patient deleted successfully" });
   } catch (error) {
     console.error("Error deleting patient:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });

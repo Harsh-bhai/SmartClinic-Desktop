@@ -34,3 +34,11 @@ export async function deletePatient(id) {
   const result = await db.delete(patients).where(eq(patients.id, id)).returning();
   return result[0];
 }
+
+// Delete patient in bulk
+export async function deletePatientByBulk(data) {
+  data.forEach(async (id) => {
+    await db.delete(patients).where(eq(patients.id, id));
+  });
+  return;
+}

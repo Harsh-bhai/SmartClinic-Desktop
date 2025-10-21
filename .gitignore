@@ -7,4 +7,5 @@ out
 .env
 build
 .vscode
-
+*.db
+dev.db

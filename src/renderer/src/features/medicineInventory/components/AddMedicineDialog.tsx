@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createMedicine } from "../medicineInventorySlice";
+import { createMedicine } from "@/features/medicineInventory";
 import {
   Dialog,
   DialogContent,

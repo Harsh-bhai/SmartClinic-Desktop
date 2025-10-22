@@ -27,7 +27,9 @@ export async function getPatientById(req, res) {
     const patient = await patientService.getPatientById(id);
 
     if (!patient) {
-      return res.status(404).json({ success: false, message: "Patient not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Patient not found" });
     }
 
     res.json({ success: true, patient });
@@ -43,7 +45,9 @@ export async function updatePatient(req, res) {
     const updated = await patientService.updatePatient(id, req.body);
 
     if (!updated) {
-      return res.status(404).json({ success: false, message: "Patient not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Patient not found" });
     }
 
     res.json({ success: true, patient: updated });
@@ -59,7 +63,9 @@ export async function deletePatient(req, res) {
     const deleted = await patientService.deletePatient(id);
 
     if (!deleted) {
-      return res.status(404).json({ success: false, message: "Patient not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Patient not found" });
     }
 
     res.json({ success: true, message: "Patient deleted successfully" });
@@ -74,10 +80,15 @@ export async function deletePatientByBulk(req, res) {
     const deleted = await patientService.deletePatientByBulk(req.body);
 
     if (!deleted) {
-      return res.status(404).json({ success: false, message: "Patient not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Patient not found" });
     }
 
-    res.json({ success: true, message: "Multiple Patient deleted successfully" });
+    res.json({
+      success: true,
+      message: "Multiple Patient deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting patient:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });

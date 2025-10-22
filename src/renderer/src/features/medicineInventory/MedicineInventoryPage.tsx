@@ -1,9 +1,5 @@
-"use client";
-
 import { useEffect } from "react";
 import { fetchAllMedicines } from "@/features/medicineInventory";
-
-
 import MedicineList from "./components/MedicineList";
 import { useAppDispatch, useAppSelector } from "@renderer/app/hooks";
 
@@ -12,7 +8,6 @@ export default function MedicineInventoryPage() {
   const { medicines, loading, error } = useAppSelector(
     (state) => state.medicineInventory
   );
-
 
   useEffect(() => {
     dispatch(fetchAllMedicines());

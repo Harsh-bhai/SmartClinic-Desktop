@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // 🏥 Base API URL (adjust if your backend runs elsewhere)
-const API_URL = "http://localhost:5000/api/patients";
+const API_URL = "http://localhost:3000/api/patients";
 
 // 🌱 Patient Type
 export interface Patient {
@@ -9,10 +9,11 @@ export interface Patient {
   name: string;
   age: number;
   gender: string;
-  paidStatus?: boolean;
-  paid?: number;
+  paidStatus: boolean;
+  paid: number;
   phone?: string;
   address?: string;
+  treatment: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -86,7 +86,7 @@ export const deletePrescription = createAsyncThunk(
 );
 
 // 🧠 Slice State
-interface PrescriptionState {
+export interface PrescriptionState {
   items: Prescription[];
   selected?: Prescription | null;
   loading: boolean;
@@ -177,4 +177,4 @@ const prescriptionSlice = createSlice({
 });
 
 export const { clearSelectedPrescription } = prescriptionSlice.actions;
-export default prescriptionSlice.reducer;
+export const prescriptionReducer = prescriptionSlice.reducer;

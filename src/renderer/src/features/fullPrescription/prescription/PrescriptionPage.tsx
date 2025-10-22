@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PrescriptionForm } from "./components/PrescriptionForm";
-import { createPrescription, getPrescriptionById } from "./prescriptionApi";
+import { createPrescriptionApi, getPrescriptionByIdApi } from "./prescriptionApi";
 import { useAppDispatch } from "@/app/hooks";
 
 export default function PrescriptionPage() {
@@ -15,13 +15,13 @@ export default function PrescriptionPage() {
       try {
         if (visitId) {
           // existing visit, verify it
-          const existingVisit = await getPrescriptionById(visitId);
+          const existingVisit = await getPrescriptionByIdApi(visitId);
           if (existingVisit) setResolvedVisitId(visitId);
           else navigate("/error"); // or show toast
         } else {
           // new visit → create one in DB
-          const newVisit = await createPrescription({
-            visitId: "TEMP_PATIENT_ID", // ⚠️ replace with actual patient selection
+          const newVisit = await createPrescriptionApi({
+            // visitId: "TEMP_PATIENT_ID", // ⚠️ replace with actual patient selection
             reason: "New Checkup",
             examinationFindings: "",
             advice: "",

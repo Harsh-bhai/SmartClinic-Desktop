@@ -27,7 +27,7 @@ export interface PrescribedMedicineUpdatePayload{
   }
 
 // ✅ 1. Create a new prescribed medicine
-export async function createPrescribedMedicine(data: PrescribedMedicine) {
+export async function createPrescribedMedicineApi(data: PrescribedMedicine) {
   const response = await axios.post(`${BASE_URL}`, data);
   return response.data.data;
 }
@@ -55,7 +55,7 @@ export async function getPrescribedMedicineById(id: string) {
 }
 
 // ✅ 5. Update prescribed medicine by its ID
-export async function updatePrescribedMedicine(
+export async function updatePrescribedMedicineApi(
   id: string,
   data: PrescribedMedicineUpdatePayload,
 ) {
@@ -77,7 +77,7 @@ export async function updatePrescribedMedicineByPrescriptionAndMedicineId(
 }
 
 // ✅ 7. Delete prescribed medicine by its ID
-export async function deletePrescribedMedicine(id: string) {
+export async function deletePrescribedMedicineApi(id: string) {
   const response = await axios.delete(`${BASE_URL}/${id}`);
   return response.data;
 }

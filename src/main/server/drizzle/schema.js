@@ -13,6 +13,7 @@ export const patients = sqliteTable("patients", {
   paid: integer("paid").notNull().default(0),
   phone: text("phone"),
   address: text("address"),
+  treatment: text("treatment").notNull().default("pending"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

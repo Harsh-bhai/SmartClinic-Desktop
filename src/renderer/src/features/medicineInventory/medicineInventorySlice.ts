@@ -11,7 +11,7 @@ import {
   deleteAllMedicinesApi,
 } from "@/features/medicineInventory";
 
-interface MedicineInventoryState {
+export interface MedicineInventoryState {
   medicines: Medicine[];
   selectedMedicine: Medicine | null;
   loading: boolean;
@@ -304,4 +304,4 @@ const medicineInventorySlice = createSlice({
 
 export const { setSelectedMedicine } = medicineInventorySlice.actions;
 
-export default medicineInventorySlice.reducer;
+export const medicineInventoryReducer = medicineInventorySlice.reducer;

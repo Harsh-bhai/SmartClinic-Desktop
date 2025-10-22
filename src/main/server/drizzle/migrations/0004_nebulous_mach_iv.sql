@@ -1,0 +1,1 @@
+ALTER TABLE `patients` ADD `treatment` integer DEFAULT 0 NOT NULL;

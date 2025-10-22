@@ -3,7 +3,7 @@ import * as prescribedMedicinesApi from "./prescribedMedicinesApi";
 import { PrescribedMedicine, PrescribedMedicineUpdatePayload } from "./prescribedMedicinesApi";
 
 
-interface PrescribedMedicinesState {
+export interface PrescribedMedicinesState {
   medicines: PrescribedMedicine[];
   loading: boolean;
   error: string | null;
@@ -44,11 +44,12 @@ export const createPrescribedMedicine = createAsyncThunk(
       frequency: string[];
       duration: string;
       remarks?: string;
+      timing: string;
     },
     { rejectWithValue }
   ) => {
     try {
-      const newMed = await prescribedMedicinesApi.createPrescribedMedicine(data);
+      const newMed = await prescribedMedicinesApi.createPrescribedMedicineApi(data);
       return newMed;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to create prescribed medicine");
@@ -64,7 +65,7 @@ export const updatePrescribedMedicine = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const updated = await prescribedMedicinesApi.updatePrescribedMedicine(id, data);
+      const updated = await prescribedMedicinesApi.updatePrescribedMedicineApi(id, data);
       return updated;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to update prescribed medicine");
@@ -77,7 +78,7 @@ export const deletePrescribedMedicine = createAsyncThunk(
   "prescribedMedicines/delete",
   async (id: string, { rejectWithValue }) => {
     try {
-      await prescribedMedicinesApi.deletePrescribedMedicine(id);
+      await prescribedMedicinesApi.deletePrescribedMedicineApi(id);
       return id; // return id for easy filtering
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to delete prescribed medicine");
@@ -141,4 +142,4 @@ const prescribedMedicinesSlice = createSlice({
 });
 
 export const { clearPrescribedMedicines } = prescribedMedicinesSlice.actions;
-export default prescribedMedicinesSlice.reducer;
+export const prescribedMedicinesReducer = prescribedMedicinesSlice.reducer;

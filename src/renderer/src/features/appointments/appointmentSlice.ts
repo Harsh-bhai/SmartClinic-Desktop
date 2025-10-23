@@ -61,6 +61,9 @@ const appointmentSlice = createSlice({
         state.completedAppointments.push(done);
       }
     },
+    addAppointment: (state, action: PayloadAction<Appointment>) => {
+    state.newAppointments.push(action.payload);
+  },
   },
   extraReducers: builder => {
     builder
@@ -78,7 +81,7 @@ const appointmentSlice = createSlice({
   },
 });
 
-export const { markArrived, markCompleted } = appointmentSlice.actions;
+export const { markArrived, markCompleted, addAppointment } = appointmentSlice.actions;
 
 // 👇 Only persist selected keys
 const persistConfig = {

@@ -4,35 +4,15 @@ import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export async function createMedicine(data) {
-  const id = randomUUID();
-  const row = {
-    id,
-    name: data.name,
-    type: data.type || null,
-    expectedDose: data.expectedDose || null,
-    manufacturer: data.manufacturer || null,
-    relatedDisease: data.relatedDisease || null,
-    notes: data.notes || null,
-  };
-
-  const result = await db.insert(medicineInventory).values(row).returning();
+  data.id = randomUUID();
+  const result = await db.insert(medicineInventory).values(data).returning();
   return result[0];
 }
 
 export async function createMedicinesByBulk(dataArray) {
-  
   dataArray.forEach(async (data) => {
-    const id = randomUUID();
-    const row = {
-      id,
-      name: data.name,
-      type: data.type || null,
-      expectedDose: data.expectedDose || null,
-      manufacturer: data.manufacturer || null,
-      relatedDisease: data.relatedDisease || null,
-      notes: data.notes || null,
-    };
-    await db.insert(medicineInventory).values(row).returning();
+    data.id = randomUUID();
+    await db.insert(medicineInventory).values(data).returning();
   });
   return { success: true, message: "Medicines created successfully" };
 }
@@ -53,23 +33,12 @@ export async function getMedicineById(id) {
 }
 
 export async function updateMedicine(id, data) {
-  const updated = {
-    name: data.name,
-    type: data.type,
-    expectedDose: data.expectedDose,
-    manufacturer: data.manufacturer,
-    relatedDisease: data.relatedDisease,
-    notes: data.notes,
-    updatedAt: new Date().toISOString(),
-  };
-
   const result = await db
     .update(medicineInventory)
-    .set(updated)
+    .set({ ...data, updatedAt: new Date().toISOString() })
     .where(eq(medicineInventory.id, id))
     .returning();
-
-  return result[0] || null;
+  return result[0];
 }
 
 export async function deleteMedicine(id) {

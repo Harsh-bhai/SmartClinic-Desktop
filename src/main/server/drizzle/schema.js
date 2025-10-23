@@ -9,11 +9,19 @@ export const patients = sqliteTable("patients", {
   name: text("name").notNull(),
   age: integer("age").notNull(),
   gender: text("gender").notNull(),
-  paidStatus: integer("paid_status", {mode:"boolean"}).notNull().default(0),
-  paid: integer("paid").notNull().default(0),
   phone: text("phone"),
   address: text("address"),
-  treatment: text("treatment").notNull().default("pending"),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// 🧍 Appointment Table
+export const appointment = sqliteTable("appointment", {
+  id: text("id").primaryKey().notNull(),
+  patientId: text("patient_id").notNull().references(()=>patients.id),
+  paidStatus: integer("paid_status", {mode:"boolean"}).notNull().default(0),
+  paid: integer("paid").notNull().default(0),
+  treatmentStatus: text("treatment").notNull().default("pending"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -21,9 +29,8 @@ export const patients = sqliteTable("patients", {
 // 📋 Prescription Table
 export const prescription = sqliteTable("prescription", {
   id: text("id").primaryKey().notNull(),
-  patientId: text("patient_id")
-    .notNull()
-    .references(() => patients.id),
+  patientId: text("patient_id").notNull().references(() => patients.id),
+  appointmentId: text("appointment_id").notNull().references(() => appointment.id),
   reason: text("reason").notNull(),
   examinationFindings: text("examination_findings").notNull(),
   advice: text("advice").notNull(),
@@ -48,9 +55,7 @@ export const medicineInventory = sqliteTable("medicine_inventory", {
 // 💊 Prescribed Medicines Table
 export const prescribedMedicines = sqliteTable("prescribed_medicines", {
   id: text("id").primaryKey().notNull(),
-  prescriptionId: text("prescription_id")
-    .notNull()
-    .references(() => prescription.id),
+  prescriptionId: text("prescription_id").notNull().references(() => prescription.id),
   medicineId: text("medicine_id").references(() => medicineInventory.id),
   name: text("name").notNull(),
   dose: text("dose").notNull(),

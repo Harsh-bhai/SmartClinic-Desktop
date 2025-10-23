@@ -1,92 +1,66 @@
-import { Appointment } from "@/features/appointments/appointmentSlice";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Appointment } from "../appointmentSlice";
 
-interface Props {
-  appointments: Appointment[];
-  onArrived?: (id: string) => void;
-  onComplete?: (id: string) => void;
-  readOnly?: boolean;
-  showActions?: boolean;
+// ✅ Define prop types here
+interface AppointmentTableProps {
+  newAppointments: Appointment[];
+  completedAppointments: Appointment[];
 }
 
-export default function AppointmentTable({
-  appointments,
-  onArrived,
-  onComplete,
-  readOnly = false,
-  showActions = true,
-}: Props) {
-  if (!appointments?.length) return <p>No appointments found.</p>;
-
-  // Automatically sort: arrived first, then by queue number
-  const sortedAppointments = [
-    ...appointments.filter((a) => a.arrived).sort((a, b) => a.queueNumber - b.queueNumber),
-    ...appointments.filter((a) => !a.arrived),
-  ];
-
+export const AppointmentTable: React.FC<AppointmentTableProps> = ({
+  newAppointments,
+  completedAppointments,
+}) => {
   return (
-    <div className="border rounded-md overflow-hidden mt-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>#</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Age</TableHead>
-            <TableHead>Gender</TableHead>
-            <TableHead>Paid</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead>Arrived</TableHead>
-            <TableHead>Treatment</TableHead>
-            {showActions && <TableHead>Actions</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedAppointments.map((a, index) => (
-            <TableRow key={a.id} className={a.arrived ? "bg-green-50" : ""}>
-              <TableCell>{index + 1}</TableCell>
-              <TableCell className="font-medium">{a.name}</TableCell>
-              <TableCell>{a.age}</TableCell>
-              <TableCell>{a.gender}</TableCell>
-              <TableCell>{a.paid}</TableCell>
-              <TableCell>{a.paidStatus ? "Paid" : "Unpaid"}</TableCell>
-              <TableCell>{a.phone || "—"}</TableCell>
-              <TableCell>{a.address || "—"}</TableCell>
-              <TableCell>
-                {readOnly ? (
-                  a.arrived ? "✅ Yes" : "❌ No"
-                ) : (
-                  <Button
-                    size="sm"
-                    variant={a.arrived ? "secondary" : "outline"}
-                    onClick={() => onArrived?.(a.id!)}
-                  >
-                    {a.arrived ? "Arrived" : "Mark Arrived"}
-                  </Button>
-                )}
-              </TableCell>
-              <TableCell>
-                {a.treatment === "complete" ? "✅ Complete" : "⏳ Pending"}
-              </TableCell>
-              {showActions && (
-                <TableCell>
-                  {!readOnly && (
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={() => onComplete?.(a.id!)}
-                    >
-                      Mark Complete
-                    </Button>
-                  )}
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-6">
+      {/* New Appointments */}
+      <Card className="p-4">
+        <h2 className="text-lg font-semibold mb-2">New Appointments</h2>
+        {newAppointments.length === 0 ? (
+          <p className="text-sm text-gray-500">No new appointments</p>
+        ) : (
+          <div className="space-y-2">
+            {newAppointments.map((a) => (
+              <div
+                key={a.id}
+                className="flex justify-between items-center border rounded-md p-2 hover:bg-muted/30"
+              >
+                <div>
+                  <p className="font-medium">{a.name}</p>
+                  <p className="text-xs text-gray-500">{a.createdAt}</p>
+                </div>
+                <Badge>New</Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Completed Appointments */}
+      <Card className="p-4">
+        <h2 className="text-lg font-semibold mb-2">Completed Appointments</h2>
+        {completedAppointments.length === 0 ? (
+          <p className="text-sm text-gray-500">No completed appointments</p>
+        ) : (
+          <div className="space-y-2">
+            {completedAppointments.map((a) => (
+              <div
+                key={a.id}
+                className="flex justify-between items-center border rounded-md p-2 hover:bg-muted/30"
+              >
+                <div>
+                  <p className="font-medium">{a.name}</p>
+                  <p className="text-xs text-gray-500">{a.createdAt}</p>
+                </div>
+                <Badge variant="secondary">Completed</Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
-}
+};
+

@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 // Create new patient
 export async function createPatient(data) {
+  data.id = randomUUID();
   const result = await db.insert(patients).values(data).returning();
   return result[0];
 }
@@ -11,6 +12,11 @@ export async function createPatient(data) {
 // Get all patients
 export async function getAllPatients() {
   return await db.select().from(patients).orderBy(patients.createdAt);
+}
+
+// Get all patients of today
+export async function getAllPatientsOfToday() {
+  return await db.select().from(patients).where(eq(patients.createdAt, new Date().toISOString()));
 }
 
 // Get single patient by ID

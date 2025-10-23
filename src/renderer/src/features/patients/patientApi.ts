@@ -9,11 +9,8 @@ export interface Patient {
   name: string;
   age: number;
   gender: string;
-  paidStatus: boolean;
-  paid: number;
   phone?: string;
   address?: string;
-  treatment: string;
   createdAt?: string;
   updatedAt?: string;
 }

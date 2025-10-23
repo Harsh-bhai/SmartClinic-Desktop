@@ -1,9 +1,9 @@
+import { randomUUID } from "crypto";
 import * as patientService from "../services/patient.service.js";
 
 export async function createPatient(req, res) {
   try {
-    const data = req.body;
-    const patient = await patientService.createPatient(data);
+    const patient = await patientService.createPatient(req.body);
     res.status(201).json({ success: true, patient });
   } catch (error) {
     console.error("Error creating patient:", error);

@@ -170,10 +170,6 @@ const medicineInventorySlice = createSlice({
       })
 
       // Fetch by ID
-      .addCase(fetchMedicineById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(
         fetchMedicineById.fulfilled,
         (state, action: PayloadAction<Medicine>) => {
@@ -181,16 +177,8 @@ const medicineInventorySlice = createSlice({
           state.selectedMedicine = action.payload;
         },
       )
-      .addCase(fetchMedicineById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
 
       // Create single
-      .addCase(createMedicine.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(
         createMedicine.fulfilled,
         (state, action: PayloadAction<Medicine>) => {
@@ -235,16 +223,8 @@ const medicineInventorySlice = createSlice({
           if (index !== -1) state.medicines[index] = action.payload;
         },
       )
-      .addCase(updateMedicine.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
 
       // Delete
-      .addCase(deleteMedicine.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(
         deleteMedicine.fulfilled,
         (state, action: PayloadAction<string>) => {
@@ -255,10 +235,6 @@ const medicineInventorySlice = createSlice({
           );
         },
       )
-      .addCase(deleteMedicine.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       // Delete by Bulk
       .addCase(deleteMedicineByBulk.pending, (state) => {
         state.loading = true;
@@ -267,10 +243,7 @@ const medicineInventorySlice = createSlice({
       .addCase(
         deleteMedicineByBulk.fulfilled,
         (state, action: PayloadAction<string[]>) => {
-          console.log(action.payload, "here");
-          
           state.loading = false;
-          
           state.medicines = state.medicines.filter(
             (m) => !action.payload.includes(m.id!),
           );
@@ -294,11 +267,6 @@ const medicineInventorySlice = createSlice({
           state.medicines = [];
         },
       )
-      .addCase(deleteAllMedicines.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      }
-    );
   },
 });
 

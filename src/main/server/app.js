@@ -18,4 +18,4 @@ app.use("/api/prescription", prescriptionRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/prescribed-medicines", prescribedMedicineRoutes);
 app.use("/api/medicine-inventory", medicineInventoryRoutes);
-app.use("/api/medicine-inventory", appointmentRoutes);
+app.use("/api/appointments", appointmentRoutes);

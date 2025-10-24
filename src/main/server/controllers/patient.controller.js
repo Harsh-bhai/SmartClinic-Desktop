@@ -3,8 +3,8 @@ import * as patientService from "../services/patient.service.js";
 
 export async function createPatient(req, res) {
   try {
-    const patient = await patientService.createPatient(req.body);
-    res.status(201).json({ success: true, patient });
+    const data = await patientService.createPatient(req.body);
+    res.status(201).json({ success: true, data });
   } catch (error) {
     console.error("Error creating patient:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -13,8 +13,8 @@ export async function createPatient(req, res) {
 
 export async function getAllPatients(req, res) {
   try {
-    const patients = await patientService.getAllPatients();
-    res.json({ success: true, patients });
+    const data = await patientService.getAllPatients();
+    res.json({ success: true, data });
   } catch (error) {
     console.error("Error fetching patients:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -24,7 +24,7 @@ export async function getAllPatients(req, res) {
 export async function getPatientById(req, res) {
   try {
     const { id } = req.params;
-    const patient = await patientService.getPatientById(id);
+    const data = await patientService.getPatientById(id);
 
     if (!patient) {
       return res
@@ -32,7 +32,7 @@ export async function getPatientById(req, res) {
         .json({ success: false, message: "Patient not found" });
     }
 
-    res.json({ success: true, patient });
+    res.json({ success: true, data });
   } catch (error) {
     console.error("Error fetching patient:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -50,7 +50,7 @@ export async function updatePatient(req, res) {
         .json({ success: false, message: "Patient not found" });
     }
 
-    res.json({ success: true, patient: updated });
+    res.json({ success: true, data: updated });
   } catch (error) {
     console.error("Error updating patient:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });

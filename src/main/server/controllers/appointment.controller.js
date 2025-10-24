@@ -42,38 +42,24 @@ export async function createAppointmentByBulk(req, res) {
 // 📋 Get all appointments
 export async function getAllAppointments(req, res) {
   try {
-    const appointments = await appointmentService.getAllAppointments();
-    res.status(200).json({
-      success: true,
-      data: appointments,
-    });
-  } catch (error) {
-    console.error("Error fetching appointments:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch appointments",
-      error: error.message,
-    });
+    const appointments = await appointmentService.getAllAppointmentAndPaitentData();
+    res.status(200).json(appointments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 }
 
 // 📅 Get today's appointments
-export async function getTodayAppointments(req, res) {
+export const getTodayAppointments = async (req, res) => {
   try {
-    const appointments = await appointmentService.getTodayAppointments();
-    res.status(200).json({
-      success: true,
-      data: appointments,
-    });
-  } catch (error) {
-    console.error("Error fetching today's appointments:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch today's appointments",
-      error: error.message,
-    });
+    const appointments = await appointmentService.getTodaysAppointmentAndPaitentData();
+    res.status(200).json(appointments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-}
+};
+
+
 
 // 🔍 Get single appointment by ID
 export async function getAppointmentById(req, res) {

@@ -1,6 +1,7 @@
 import { db } from "../utils/drizzle.js";
 import { patients } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 // Create new patient
 export async function createPatient(data) {

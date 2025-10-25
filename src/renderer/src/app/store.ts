@@ -12,7 +12,7 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  // blacklist: ["appointments"],
+  whitelist: ["appointments"],
 };
 
 const reducer = combineReducers({

@@ -6,144 +6,133 @@ import {
   updateAppointmentApi,
   deleteAppointmentApi,
   deleteAppointmentsByBulkApi,
+  getAllAppointmentsApi,
 } from "./appointmentApi";
-import { createPatientApi, getAllPatientsApi, getPatientByIdApi, Patient } from "../patients";
+import { createPatientApi, getAllPatientsApi, Patient } from "../patients";
 
-// Frontend-only extended version (adds queue & arrived)
+
+export interface AppointmentMeta {
+  appointmentId: string;
+  arrived: boolean;
+  queueNumber: number;
+}
+
+
+// Extended appointment interface for frontend
 export interface ExtendedAppointment extends Appointment {
-  name: string;
-  age: number;
-  gender: string;
-  phone?: string;
-  address?: string;
   queueNumber: number;
   arrived: boolean;
 }
 
-// wrapper for create patient if new comes, get existing patient from searchbar/dropdown, 
-
-// Slice State
+// Slice state
 export interface AppointmentState {
   newAppointments: ExtendedAppointment[];
   completedAppointments: ExtendedAppointment[];
-  existingPatients: ExtendedAppointment[];
+  existingPatients: Patient[];
+  selectedAppointment: ExtendedAppointment | null;
   loading: boolean;
   error: string | null;
+  meta: AppointmentMeta[];
 }
 
 const initialState: AppointmentState = {
   newAppointments: [],
   completedAppointments: [],
   existingPatients: [],
+  selectedAppointment: null,
   loading: false,
   error: null,
+  meta: [],
 };
 
-
-// Async Thunks
-
-
-// Fetch today's appointments
+// 🔹 Fetch today's appointments
 export const fetchAppointments = createAsyncThunk(
   "appointments/fetchToday",
   async (_, { rejectWithValue }) => {
     try {
       const res = await getTodayAppointmentsApi();
-      // Assign queue numbers and arrived = false
-      const patientId = res.patientId;
-      const response = await getPatientByIdApi(patientId);
-      delete response.createdAt;
-      delete response.updatedAt;
-      return {...res, ...response} as ExtendedAppointment[];
-    } catch (err: any) {
-      return rejectWithValue(
-        err.message || "Failed to fetch appointments",
-      );
-    }
-  },
-);
-
-// Fetch existing Patients
-export const fetchExisitingPatients = createAsyncThunk(
-  "appointments/fetchPatients",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await getAllPatientsApi();
-      // Assign queue numbers and arrived = false
-      return res.map((appt: Patient, i: number) => ({
-        patientId: appt.id,
+      // Add queue numbers and arrived = false
+      return res.map((appt: Appointment, i: number) => ({
         ...appt,
-        paidStatus: false,
-        paid: 0,
-        treatmentStatus: "pending",
         queueNumber: i + 1,
         arrived: false,
       })) as ExtendedAppointment[];
     } catch (err: any) {
-      return rejectWithValue(
-        err.message || "Failed to fetch appointments",
-      );
+      return rejectWithValue(err.message || "Failed to fetch appointments");
     }
   },
 );
 
-// Create new appointment (for a patient)
+// 🔹 Fetch existing patients (for dropdown/search)
+export const fetchExistingPatients = createAsyncThunk(
+  "appointments/fetchPatients",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await getAllPatientsApi();
+      return res as Patient[];
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Failed to fetch patients");
+    }
+  },
+);
+
+// 🔹 Create new appointment for existing patient
 export const createAppointment = createAsyncThunk(
   "appointments/create",
-  async (data: ExtendedAppointment, { rejectWithValue }) => {
+  async (data: Appointment, { rejectWithValue }) => {
     try {
       const res = await createAppointmentApi(data);
       return res;
     } catch (err: any) {
-      return rejectWithValue(
-        err.message || "Failed to create appointment",
-      );
+      return rejectWithValue(err.message || "Failed to create appointment");
     }
   },
 );
 
-
-// Create appointment for new patient
+// 🔹 Create appointment for a new patient
 export const createAppointmentForNewPatient = createAsyncThunk(
   "appointments/createForNewPatient",
-  async (data: ExtendedAppointment, { rejectWithValue }) => {
+  async (data: Appointment, { rejectWithValue }) => {
     try {
-      // create that patient
-      const response = await createPatientApi(data);
-      data.patientId = response.id;
-      delete response.createdAt;
-      delete response.updatedAt;
-      let res = await createAppointmentApi(data);
-      return {...res, ...response};
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        return rejectWithValue(
-          err.message || "Failed to create appointment",
-        );
-      }
+      const patientData: Patient = {
+        name: data.name!,
+        age: data.age!,
+        gender: data.gender!,
+        phone: data.phone!,
+        address: data.address!,
+      };
+      const newPatient = await createPatientApi(patientData);
+      const appointmentData: Appointment = {
+        ...data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        patientId: newPatient.id,
+      };
+      const newAppointmentData = await createAppointmentApi(appointmentData);
+      return newAppointmentData;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Failed to create appointment");
     }
   },
 );
 
-// Update appointment
+// 🔹 Update appointment
 export const updateAppointment = createAsyncThunk(
   "appointments/update",
   async (
-    { id, data }: { id: string; data: ExtendedAppointment },
+    { id, data }: { id: string; data: Appointment },
     { rejectWithValue },
   ) => {
     try {
       const res = await updateAppointmentApi(id, data);
       return res;
     } catch (err: any) {
-      return rejectWithValue(
-        err.message || "Failed to update appointment",
-      );
+      return rejectWithValue(err.message || "Failed to update appointment");
     }
   },
 );
 
-// Delete appointment
+// 🔹 Delete single appointment
 export const deleteAppointment = createAsyncThunk(
   "appointments/delete",
   async (id: string, { rejectWithValue }) => {
@@ -151,24 +140,20 @@ export const deleteAppointment = createAsyncThunk(
       await deleteAppointmentApi(id);
       return id;
     } catch (err: any) {
-      return rejectWithValue(
-        err.message || "Failed to delete appointment",
-      );
+      return rejectWithValue(err.message || "Failed to delete appointment");
     }
   },
 );
 
-// Delete appointment
-export const deleteAppointmentByBulk = createAsyncThunk(
+// 🔹 Delete multiple appointments
+export const deleteAppointmentsByBulk = createAsyncThunk(
   "appointments/deleteBulk",
   async (ids: string[], { rejectWithValue }) => {
     try {
       await deleteAppointmentsByBulkApi(ids);
       return ids;
     } catch (err: any) {
-      return rejectWithValue(
-        err.message || "Failed to delete appointment",
-      );
+      return rejectWithValue(err.message || "Failed to delete appointments");
     }
   },
 );
@@ -177,12 +162,14 @@ const appointmentSlice = createSlice({
   name: "appointments",
   initialState,
   reducers: {
-    // Mark patient as arrived
-    markArrived: (state, action: PayloadAction<string>) => {
+    // Mark as arrived
+    markArrivedToggle: (state, action: PayloadAction<string>) => {
       const appt = state.newAppointments.find((a) => a.id === action.payload);
-      if (appt) appt.arrived = true;
+      if (appt) {
+        appt.arrived ? (appt.arrived = false) : (appt.arrived = true);
+      }
 
-      // Re-sort: arrived patients first
+      // Reorder arrived first
       state.newAppointments = [
         ...state.newAppointments.filter((a) => a.arrived),
         ...state.newAppointments.filter((a) => !a.arrived),
@@ -202,10 +189,15 @@ const appointmentSlice = createSlice({
         });
       }
     },
+
+    setSelectedAppointment: (state, action: PayloadAction<ExtendedAppointment>) => {
+      state.selectedAppointment = action.payload;
+    }
   },
+
   extraReducers: (builder) => {
     builder
-      // Fetch appointments
+      // Fetch today's appointments
       .addCase(fetchAppointments.pending, (state) => {
         state.loading = true;
       })
@@ -218,20 +210,20 @@ const appointmentSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // Fetch exisitng patients
-      .addCase(fetchExisitingPatients.pending, (state) => {
+      // Fetch existing patients
+      .addCase(fetchExistingPatients.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchExisitingPatients.fulfilled, (state, action) => {
+      .addCase(fetchExistingPatients.fulfilled, (state, action) => {
         state.loading = false;
         state.existingPatients = action.payload;
       })
-      .addCase(fetchExisitingPatients.rejected, (state, action) => {
+      .addCase(fetchExistingPatients.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
 
-      // Create
+      // Create appointment
       .addCase(createAppointment.fulfilled, (state, action) => {
         const newAppt: ExtendedAppointment = {
           ...action.payload,
@@ -240,7 +232,8 @@ const appointmentSlice = createSlice({
         };
         state.newAppointments.push(newAppt);
       })
-      // Create for new patient
+
+      // Create appointment for new patient
       .addCase(createAppointmentForNewPatient.fulfilled, (state, action) => {
         const newAppt: ExtendedAppointment = {
           ...action.payload,
@@ -248,11 +241,6 @@ const appointmentSlice = createSlice({
           arrived: false,
         };
         state.newAppointments.push(newAppt);
-      })
-
-      .addCase(createAppointmentForNewPatient.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
       })
 
       // Update
@@ -273,35 +261,18 @@ const appointmentSlice = createSlice({
         );
       })
 
-      // Delete By bulk
+      // Bulk delete
       .addCase(
-        deleteAppointmentByBulk.fulfilled,
+        deleteAppointmentsByBulk.fulfilled,
         (state, action: PayloadAction<string[]>) => {
-          state.loading = false;
           state.newAppointments = state.newAppointments.filter(
-            (m) => !action.payload.includes(m.id!),
+            (a) => !action.payload.includes(a.id!),
           );
         },
       );
   },
 });
 
-export const { markArrived, markCompleted } = appointmentSlice.actions;
-
-// // Persist Configuration (only appointments data)
-// const persistConfig = {
-//   key: "appointments",
-//   storage,
-//   whitelist: ["newAppointments", "completedAppointments"],
-// };
-
-// export const appointmentReducer = persistReducer(
-//   persistConfig,
-//   appointmentSlice.reducer,
-// );
-
+export const { markArrivedToggle, markCompleted, setSelectedAppointment } =
+  appointmentSlice.actions;
 export const appointmentReducer = appointmentSlice.reducer;
-
-
-
-

@@ -1,59 +1,82 @@
 import axios from "axios";
 
-const API_URL = `http://localhost:3000/api/appointments`;
+// 🧩 Base URL for all appointment APIs
+const API_BASE_URL = `http://localhost:3000/api/appointments`;
 
+// 🧠 Appointment interface
 export interface Appointment {
   id?: string;
-  patientId: string;
+  treatmentStatus: string;
   paidStatus: boolean;
   paid: number;
-  treatmentStatus: string;
   createdAt?: string;
   updatedAt?: string;
+  patientId: string;
+  name?: string;
+  age?: number;
+  gender?: string;
+  phone?: string;
+  address?: string;
 }
 
-// ➕ Create a new appointment
-export async function createAppointmentApi(data: Appointment){
-  const res = await axios.post(API_URL, data);
-  return res.data.data;
-}
+// 🌐 Axios instance
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-// ➕ Create appointments in bulk
-export async function createAppointmentsByBulkApi(data: Appointment[]) {
-  const res = await axios.post(`${API_URL}/bulk`, data);
-  return res.data.data;
-}
+// ➕ Create a single appointment
+export const createAppointmentApi = async (data: Appointment) => {
+  const response = await api.post("/", data);
+  return response.data.data;
+};
+
+// ➕ Create multiple appointments (bulk)
+export const createAppointmentByBulkApi = async (data: Appointment[]) => {
+  const response = await api.post("/bulk", data);
+  return response.data.data;
+};
 
 // 📋 Get all appointments
-export async function getAllAppointmentsApi() {
-  const res = await axios.get(API_URL);
-  return res.data.data;
-}
+export const getAllAppointmentsApi = async () => {
+  const response = await api.get("/");
+  return response.data.data;
+};
 
-// 📅 Get today's appointments
-export async function getTodayAppointmentsApi() {
-  const res = await axios.get(`${API_URL}/today`);
-  return res.data.data;
-}
+// 📅 Get today’s appointments
+export const getTodayAppointmentsApi = async () => {
+  const response = await api.get("/today");
+  return response.data.data;
+};
 
 // 🔍 Get appointment by ID
-export async function getAppointmentByIdApi(id: string){
-  const res = await axios.get(`${API_URL}/${id}`);
-  return res.data.data;
-}
+export const getAppointmentByIdApi = async (id: string) => {
+  const response = await api.get(`/${id}`);
+  return response.data.data;
+};
+
+// 🔍 Get appointments by patient ID
+export const getAppointmentsByPatientIdApi = async (patientId: string) => {
+  const response = await api.get(`/patient/${patientId}`);
+  return response.data.data;
+};
 
 // ✏️ Update appointment
-export async function updateAppointmentApi(id: string, data: Appointment){
-  const res = await axios.put(`${API_URL}/${id}`, data);
-  return res.data.data;
-}
+export const updateAppointmentApi = async (id: string, data: Appointment) => {
+  const response = await api.put(`/${id}`, data);
+  return response.data.data;
+};
 
-// ❌ Delete appointment
-export async function deleteAppointmentApi(id: string){
-  await axios.delete(`${API_URL}/${id}`);
-}
+// 🗑️ Delete appointment by ID
+export const deleteAppointmentApi = async (id: string) => {
+  const response = await api.delete(`/${id}`);
+  return response.data.data;
+};
 
-// 🧹 Delete appointments in bulk
-export async function deleteAppointmentsByBulkApi(ids: string[]){
-  await axios.post(`${API_URL}/bulkdelete`, { ids });
-}
+// 🧹 Delete multiple appointments
+export const deleteAppointmentsByBulkApi = async (ids: string[]) => {
+  const response = await api.post("/bulkdelete", { ids });
+  return response.data.data;
+};

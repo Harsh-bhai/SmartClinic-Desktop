@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useAppDispatch } from "@/app/hooks";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,29 +13,98 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  markArrived,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  markArrivedToggle,
   markCompleted,
   deleteAppointment,
+  deleteAppointmentsByBulk,
+  setSelectedAppointment,
 } from "@/features/appointments/appointmentSlice";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Trash2, UserCheck } from "lucide-react";
+import {
+  MoreVertical,
+  Edit,
+  Trash2,
+  UserCheck,
+  Send,
+  CheckCircle2,
+} from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ExtendedAppointment } from "@/features/appointments/appointmentSlice";
 
 interface AppointmentTableProps {
-  newAppointments?: any[];
-  completedAppointments?: any[];
+  newAppointments?: ExtendedAppointment[];
+  completedAppointments?: ExtendedAppointment[];
   loading?: boolean;
+  setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const AppointmentTable: React.FC<AppointmentTableProps> = ({
+const AppointmentTable: React.FC<AppointmentTableProps> = ({
   newAppointments = [],
   completedAppointments = [],
   loading = false,
+  setDialogOpen,
 }) => {
   const dispatch = useAppDispatch();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const renderRow = (appointment: any, index: number, isCompleted = false) => (
+  const handleCheckboxChange = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  };
+
+  const handleSelectAll = () => {
+    const allIds = newAppointments.map((a) => a.id!);
+    if (selectedIds.length === allIds.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(allIds);
+    }
+  };
+
+  const handleEdit = (appointment: ExtendedAppointment) => {
+    dispatch(setSelectedAppointment(appointment));
+    setDialogOpen(true);
+  };
+
+  const handlePrescription = (id: string) => {
+    console.log("Open prescription mode for:", id);
+    // TODO: navigate to prescription mode later
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      dispatch(deleteAppointmentsByBulk(selectedIds));
+      setSelectedIds([]);
+    }
+  };
+
+  const handleBulkDone = () => {
+    selectedIds.forEach((id) => dispatch(markCompleted(id)));
+    setSelectedIds([]);
+  };
+
+  const renderRow = (
+    appointment: ExtendedAppointment,
+    index: number,
+    isCompleted = false,
+  ) => (
     <TableRow key={appointment.id || index}>
-      <TableCell className="font-medium">{appointment.queueNumber}</TableCell>
+      <TableCell>
+        <Checkbox
+          checked={selectedIds.includes(appointment.id!)}
+          onCheckedChange={() => handleCheckboxChange(appointment.id!)}
+        />
+      </TableCell>
+      <TableCell>{appointment.queueNumber ?? "-"}</TableCell>
       <TableCell>{appointment.name}</TableCell>
       <TableCell>{appointment.gender}</TableCell>
       <TableCell>{appointment.age}</TableCell>
@@ -45,58 +114,124 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
       <TableCell>
         <Badge
           variant={
-            appointment.appointmentStatus === "completed"
+            appointment.treatmentStatus === "completed"
               ? "secondary"
               : appointment.arrived
               ? "default"
               : "outline"
           }
         >
-          {appointment.appointmentStatus}
+          {appointment.treatmentStatus}
         </Badge>
       </TableCell>
-      <TableCell className="flex gap-2">
-        {!isCompleted && (
-          <>
-            {!appointment.arrived && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  dispatch(markArrived(appointment.id))
-                }
-              >
-                <UserCheck className="h-4 w-4 mr-1" /> Arrived
+      <TableCell>
+        <div className="flex items-center gap-2">
+          {/* Send (Prescription Mode) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handlePrescription(appointment.id!)}
+            title="Open in prescription mode"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+
+          {/* Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-4 w-4" />
               </Button>
-            )}
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() =>
-                dispatch(markCompleted(appointment.id))
-              }
-            >
-              <CheckCircle2 className="h-4 w-4 mr-1" /> Done
-            </Button>
-          </>
-        )}
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => dispatch(deleteAppointment(appointment.id))}
-        >
-          <Trash2 className="h-4 w-4 mr-1" /> Delete
-        </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={() => handleEdit(appointment)}>
+                <Edit className="h-4 w-4 mr-2" /> Edit
+              </DropdownMenuItem>
+
+              {!isCompleted && (
+                <DropdownMenuItem
+                  onClick={() => dispatch(markArrivedToggle(appointment.id!))}
+                >
+                  {appointment.arrived ? (
+                    <>
+                      <UserCheck className="h-4 w-4 mr-2" /> Mark as Not Arrived
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="h-4 w-4 mr-2" /> Mark as Arrived
+                    </>
+                  )}
+                </DropdownMenuItem>
+              )}
+
+              {!isCompleted && (
+                <DropdownMenuItem
+                  onClick={() => dispatch(markCompleted(appointment.id!))}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Done
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={() => dispatch(deleteAppointment(appointment.id!))}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="h-4 w-4 mr-2" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </TableCell>
     </TableRow>
   );
 
   return (
-    <Card className="overflow-hidden border shadow-sm">
+    <Card className="overflow-hidden border shadow-sm text-left">
+      {/* Bulk Actions Toolbar */}
+      {selectedIds.length > 0 && (
+        <div className="flex justify-between items-center p-3 bg-gray-50 border-b">
+          <p className="text-sm text-gray-700">
+            {selectedIds.length} selected
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleBulkDone}
+              disabled={!selectedIds.length}
+            >
+              <CheckCircle2 className="h-4 w-4 mr-1" /> Mark Done
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              disabled={!selectedIds.length}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Delete Selected
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>
+                <Checkbox
+                  checked={
+                    selectedIds.length > 0 &&
+                    selectedIds.length === newAppointments.length
+                  }
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
               <TableHead>Queue</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Gender</TableHead>
@@ -111,20 +246,18 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-6">
+                <TableCell colSpan={10} className="text-center py-6">
                   Loading appointments...
                 </TableCell>
               </TableRow>
             ) : newAppointments.length || completedAppointments.length ? (
               <>
                 {newAppointments.map((a, i) => renderRow(a, i, false))}
-                {completedAppointments.map((a, i) =>
-                  renderRow(a, i, true),
-                )}
+                {completedAppointments.map((a, i) => renderRow(a, i, true))}
               </>
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-6">
+                <TableCell colSpan={10} className="text-center py-6">
                   No appointments found
                 </TableCell>
               </TableRow>
@@ -136,4 +269,4 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
   );
 };
 
-export default AppointmentTable;
+export { AppointmentTable };

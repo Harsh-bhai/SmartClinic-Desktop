@@ -5,41 +5,51 @@ import { randomUUID } from "crypto";
 
 // 🧩 Create new appointment
 export async function createAppointment(data) {
-  data.appointments.id = randomUUID();
+  data.id = randomUUID();
+  const result = await db.insert(appointments).values(data).returning();
 
-  const result = await db.insert(appointments).values(data.appointments).returning();
+  // Return single flat object
   return {
-    appointments: result[0],
-    patient: data.patient || null,
+    ...result[0],
+    name: data.name || null,
+    age: data.age || null,
+    gender: data.gender || null,
+    phone: data.phone || null,
+    address: data.address || null,
   };
 }
 
+// 🧩 Create appointments in bulk
 export async function createAppointmentByBulk(dataArray) {
-  const inserted = [];
+  const created = [];
 
   for (const data of dataArray) {
-    data.appointments.id = randomUUID();
-    const res = await db.insert(appointments).values(data.appointments).returning();
-    inserted.push({
-      appointments: res[0],
-      patient: data.patient || null,
+    data.id = randomUUID();
+    await db.insert(appointments).values(data.appointments).returning();
+    created.push({
+      ...result[0],
+      name: data.name || null,
+      age: data.age || null,
+      gender: data.gender || null,
+      phone: data.phone || null,
+      address: data.address || null,
     });
   }
 
-  return inserted;
+  return created;
 }
 
 // 📋 Get all appointments
 export async function getAllAppointments() {
   const results = await db
     .select({
-      appointmentId: appointments.id,
+      id: appointments.id,
       treatmentStatus: appointments.treatmentStatus,
       paidStatus: appointments.paidStatus,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
-      patientName: patients.name,
+      name: patients.name,
       age: patients.age,
       gender: patients.gender,
       phone: patients.phone,
@@ -49,25 +59,7 @@ export async function getAllAppointments() {
     .leftJoin(patients, eq(appointments.patientId, patients.id))
     .orderBy(appointments.createdAt);
 
-  // 🧠 Transform into { appointments: {...}, patient: {...} } structure
-  return results.map((r) => ({
-    appointments: {
-      id: r.appointmentId,
-      treatmentStatus: r.treatmentStatus,
-      paidStatus: r.paidStatus,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      patientId: r.patientId,
-    },
-    patient: {
-      patientId: r.patientId,
-      name: r.patientName,
-      age: r.age,
-      gender: r.gender,
-      phone: r.phone,
-      address: r.address,
-    },
-  }));
+  return results;
 }
 
 // 📅 Get today's appointments
@@ -78,13 +70,13 @@ export async function getTodayAppointments() {
 
   const results = await db
     .select({
-      appointmentId: appointments.id,
+      id: appointments.id,
       treatmentStatus: appointments.treatmentStatus,
       paidStatus: appointments.paidStatus,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
-      patientName: patients.name,
+      name: patients.name,
       age: patients.age,
       gender: patients.gender,
       phone: patients.phone,
@@ -95,37 +87,20 @@ export async function getTodayAppointments() {
     .where(and(gte(appointments.createdAt, startOfDay), lte(appointments.createdAt, endOfDay)))
     .orderBy(appointments.createdAt);
 
-  return results.map((r) => ({
-    appointments: {
-      id: r.appointmentId,
-      treatmentStatus: r.treatmentStatus,
-      paidStatus: r.paidStatus,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      patientId: r.patientId,
-    },
-    patient: {
-      patientId: r.patientId,
-      name: r.patientName,
-      age: r.age,
-      gender: r.gender,
-      phone: r.phone,
-      address: r.address,
-    },
-  }));
+  return results;
 }
 
 // 🔍 Get appointment by ID
 export async function getAppointmentById(id) {
   const result = await db
     .select({
-      appointmentId: appointments.id,
+      id: appointments.id,
       treatmentStatus: appointments.treatmentStatus,
       paidStatus: appointments.paidStatus,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
-      patientName: patients.name,
+      name: patients.name,
       age: patients.age,
       gender: patients.gender,
       phone: patients.phone,
@@ -135,40 +110,20 @@ export async function getAppointmentById(id) {
     .leftJoin(patients, eq(appointments.patientId, patients.id))
     .where(eq(appointments.id, id));
 
-  if (!result.length) return null;
-
-  const r = result[0];
-  return {
-    appointments: {
-      id: r.appointmentId,
-      treatmentStatus: r.treatmentStatus,
-      paidStatus: r.paidStatus,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      patientId: r.patientId,
-    },
-    patient: {
-      patientId: r.patientId,
-      name: r.patientName,
-      age: r.age,
-      gender: r.gender,
-      phone: r.phone,
-      address: r.address,
-    },
-  };
+  return result[0] || null;
 }
 
-// 🔍 Get all appointments by patient ID
+// 🔍 Get appointments by patient ID
 export async function getAppointmentsByPatientId(patientId) {
   const results = await db
     .select({
-      appointmentId: appointments.id,
+      id: appointments.id,
       treatmentStatus: appointments.treatmentStatus,
       paidStatus: appointments.paidStatus,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
-      patientName: patients.name,
+      name: patients.name,
       age: patients.age,
       gender: patients.gender,
       phone: patients.phone,
@@ -179,38 +134,38 @@ export async function getAppointmentsByPatientId(patientId) {
     .where(eq(patients.id, patientId))
     .orderBy(appointments.createdAt);
 
-  return results.map((r) => ({
-    appointments: {
-      id: r.appointmentId,
-      treatmentStatus: r.treatmentStatus,
-      paidStatus: r.paidStatus,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      patientId: r.patientId,
-    },
-    patient: {
-      patientId: r.patientId,
-      name: r.patientName,
-      age: r.age,
-      gender: r.gender,
-      phone: r.phone,
-      address: r.address,
-    },
-  }));
+  return results;
 }
 
 // ✅ Update appointment by ID
 export async function updateAppointment(id, data) {
+  const patient = {
+    patientId: data.patientId,
+    name: data.name || null,
+    age: data.age || null,
+    gender: data.gender || null,
+    phone: data.phone || null,
+    address: data.address || null,
+  }
+
+  const appointment = {
+    id: data.id,
+    patientId: data.patientId,
+    treatmentStatus: data.appointments?.treatmentStatus || null,
+    paidStatus: data.appointments?.paidStatus || null,
+    paid: data.appointments?.paid || null
+  }
   await db
     .update(appointments)
-    .set({ ...data.appointments, updatedAt: new Date().toISOString() })
+    .set({ ...appointment, updatedAt: new Date().toISOString() })
     .where(eq(appointments.id, id));
 
   await db
     .update(patients)
-    .set({ ...data.patient, updatedAt: new Date().toISOString() })
+    .set({ ...patient, updatedAt: new Date().toISOString() })
     .where(eq(patients.id, data.patient.patientId));
 
+  // Return updated record
   return getAppointmentById(id);
 }
 

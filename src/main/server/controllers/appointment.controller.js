@@ -1,73 +1,90 @@
 import * as appointmentService from "../services/appointment.service.js";
 
-// ✅ Create new appointment
-export async function createAppointment(req, res) {
+// 📅 Create new appointment
+export const createAppointment = async (req, res) => {
   try {
     const data = req.body;
-    const appointment = await appointmentService.createAppointment(data);
+    const result = await appointmentService.createAppointment(data);
     res.status(201).json({
       success: true,
       message: "Appointment created successfully",
-      data: appointment,
+      data: result,
     });
   } catch (error) {
-    console.error("Error creating appointment:", error);
+    console.error("createAppointmentController:", error);
     res.status(500).json({
       success: false,
       message: "Failed to create appointment",
       error: error.message,
     });
   }
-}
+};
 
-export async function createAppointmentByBulk(req, res) {
+// 📅 Create multiple appointments in bulk
+export const createAppointmentByBulk = async (req, res) => {
   try {
-    const data = req.body;
-    const appointment = await appointmentService.createAppointmentByBulk(data);
+    const dataArray = req.body;
+    const result = await appointmentService.createAppointmentByBulk(dataArray);
     res.status(201).json({
       success: true,
-      message: "Multiple Appointment created successfully",
-      data: appointment,
+      message: "Appointments created in bulk successfully",
+      data: result,
     });
   } catch (error) {
-    console.error("Error creating appointment:", error);
+    console.error("createAppointmentByBulkController:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to create appointment",
+      message: "Failed to create appointments in bulk",
       error: error.message,
     });
   }
-}
+};
 
 // 📋 Get all appointments
-export async function getAllAppointments(req, res) {
+export const getAllAppointments = async (req, res) => {
   try {
-    const appointments = await appointmentService.getAllAppointmentAndPaitentData();
-    res.status(200).json(appointments);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const results = await appointmentService.getAllAppointments();
+    res.status(200).json({
+      success: true,
+      count: results.length,
+      data: results,
+    });
+  } catch (error) {
+    console.error("getAllAppointmentsController:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch appointments",
+      error: error.message,
+    });
   }
-}
+};
 
 // 📅 Get today's appointments
 export const getTodayAppointments = async (req, res) => {
   try {
-    const appointments = await appointmentService.getTodaysAppointmentAndPaitentData();
-    res.status(200).json(appointments);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const results = await appointmentService.getTodayAppointments();
+    res.status(200).json({
+      success: true,
+      count: results.length,
+      data: results,
+    });
+  } catch (error) {
+    console.error("getTodayAppointmentsController:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch today's appointments",
+      error: error.message,
+    });
   }
 };
 
-
-
-// 🔍 Get single appointment by ID
-export async function getAppointmentById(req, res) {
+// 🔍 Get appointment by ID
+export const getAppointmentById = async (req, res) => {
   try {
     const { id } = req.params;
-    const appointment = await appointmentService.getAppointmentById(id);
+    const result = await appointmentService.getAppointmentById(id);
 
-    if (!appointment) {
+    if (!result) {
       return res.status(404).json({
         success: false,
         message: "Appointment not found",
@@ -76,23 +93,52 @@ export async function getAppointmentById(req, res) {
 
     res.status(200).json({
       success: true,
-      data: appointment,
+      data: result,
     });
   } catch (error) {
-    console.error("Error fetching appointment:", error);
+    console.error("getAppointmentByIdController:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch appointment",
+      message: "Failed to fetch appointment by ID",
       error: error.message,
     });
   }
-}
+};
 
-// ✏️ Update appointment
-export async function updateAppointment(req, res) {
+// 🔍 Get appointments by patient ID
+export const getAppointmentsByPatientId = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const results = await appointmentService.getAppointmentsByPatientId(patientId);
+
+    if (!results.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No appointments found for this patient",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: results.length,
+      data: results,
+    });
+  } catch (error) {
+    console.error("getAppointmentsByPatientIdController:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch appointments by patient ID",
+      error: error.message,
+    });
+  }
+};
+
+// ✏️ Update appointment by ID
+export const updateAppointment = async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
+
     const updated = await appointmentService.updateAppointment(id, data);
 
     if (!updated) {
@@ -108,17 +154,17 @@ export async function updateAppointment(req, res) {
       data: updated,
     });
   } catch (error) {
-    console.error("Error updating appointment:", error);
+    console.error("updateAppointmentController:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update appointment",
       error: error.message,
     });
   }
-}
+};
 
-// ❌ Delete appointment
-export async function deleteAppointment(req, res) {
+// 🗑️ Delete appointment by ID
+export const deleteAppointment = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await appointmentService.deleteAppointment(id);
@@ -133,40 +179,42 @@ export async function deleteAppointment(req, res) {
     res.status(200).json({
       success: true,
       message: "Appointment deleted successfully",
+      data: deleted,
     });
   } catch (error) {
-    console.error("Error deleting appointment:", error);
+    console.error("deleteAppointmentController:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete appointment",
       error: error.message,
     });
   }
-}
+};
 
-// 🧹 Delete appointments in bulk
-export async function deleteAppointmentsByBulk(req, res) {
+// 🧹 Bulk delete appointments
+export const deleteAppointmentsByBulk = async (req, res) => {
   try {
-    const { ids } = req.body; // expects { ids: ["id1", "id2", ...] }
+    const { ids } = req.body;
 
-    if (!ids || !Array.isArray(ids)) {
+    if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Invalid request body. Expected 'ids' array.",
+        message: "Please provide an array of IDs to delete",
       });
     }
 
-    await appointmentService.deleteAppointmentsByBulk(ids);
+    const result = await appointmentService.deleteAppointmentsByBulk(ids);
+
     res.status(200).json({
       success: true,
-      message: "Appointments deleted successfully",
+      message: `${result.deleted} appointments deleted successfully`,
     });
   } catch (error) {
-    console.error("Error deleting appointments in bulk:", error);
+    console.error("deleteAppointmentsByBulkController:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to delete appointments",
+      message: "Failed to delete appointments in bulk",
       error: error.message,
     });
   }
-}
+};

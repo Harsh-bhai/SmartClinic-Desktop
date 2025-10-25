@@ -25,21 +25,19 @@ import {
 } from "@/features/appointments/appointmentSlice";
 import type { ExtendedAppointment } from "@/features/appointments/appointmentSlice";
 
-interface AddAppointmentDialogProps {
+interface AppointmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  existingPatients?: ExtendedAppointment[]; // optional list for prefill
-  selectedPatient?: ExtendedAppointment | null; // passed when user clicks on existing patient
+  selectedPatient?: ExtendedAppointment | null;
 }
 
-export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
+const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
   open,
   onOpenChange,
   selectedPatient = null,
 }) => {
   const dispatch = useAppDispatch();
 
-  // 🧾 Form State
   const [formData, setFormData] = useState<ExtendedAppointment>({
     id: "",
     patientId: "",
@@ -55,7 +53,7 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     arrived: false,
   });
 
-  // 🪄 Prefill when existing patient selected
+  // Prefill data if patient selected
   useEffect(() => {
     if (selectedPatient) {
       setFormData({
@@ -81,21 +79,21 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
     }
   }, [selectedPatient, open]);
 
-  // 📝 Handlers
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "age" || name === "paid" ? Number(value) : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedPatient) {
-      // Existing patient → create appointment only
       await dispatch(createAppointment(formData));
     } else {
-      // New patient → create patient + appointment
       await dispatch(createAppointmentForNewPatient(formData));
     }
     onOpenChange(false);
@@ -103,14 +101,16 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md min-w-4xl p-8 rounded-2xl">
+      <DialogContent className="sm:max-w-lg p-8 rounded-2xl min-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            {selectedPatient ? "Create Appointment for Existing Patient" : "Add New Appointment"}
+            {selectedPatient
+              ? "Create Appointment for Existing Patient"
+              : "Add New Appointment"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           {/* Name */}
           <div className="space-y-2">
             <Label>Name</Label>
@@ -120,12 +120,11 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               value={formData.name}
               onChange={handleChange}
               required
-              disabled={!!selectedPatient}
             />
           </div>
 
           {/* 3-column layout */}
-          <div className="grid grid-cols-3 gap-x-8 gap-y-6 space-y-2">
+          <div className="grid grid-cols-3 gap-4">
             {/* Age */}
             <div>
               <Label>Age</Label>
@@ -136,7 +135,6 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 value={formData.age}
                 onChange={handleChange}
                 required
-                disabled={!!selectedPatient}
               />
             </div>
 
@@ -148,7 +146,6 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                   setFormData((prev) => ({ ...prev, gender: value }))
                 }
                 value={formData.gender}
-                disabled={!!selectedPatient}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
@@ -167,9 +164,8 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
               <Input
                 name="phone"
                 placeholder="Contact Number"
-                value={formData.phone || ""}
+                value={formData.phone}
                 onChange={handleChange}
-                disabled={!!selectedPatient}
               />
             </div>
           </div>
@@ -180,15 +176,14 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
             <Input
               name="address"
               placeholder="Patient Address"
-              value={formData.address || ""}
+              value={formData.address}
               onChange={handleChange}
-              disabled={!!selectedPatient}
             />
           </div>
 
           {/* Payment Section */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-6">
-            <div className="mt-4 flex items-center justify-between border rounded-md p-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between border rounded-md p-3">
               <Label>Payment Received</Label>
               <Switch
                 checked={formData.paidStatus}
@@ -197,6 +192,7 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
                 }
               />
             </div>
+
             {formData.paidStatus && (
               <div>
                 <Label>Paid Amount</Label>
@@ -212,12 +208,8 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit">
@@ -230,4 +222,4 @@ export const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
   );
 };
 
-export default AddAppointmentDialog;
+export  {AppointmentDialog as AppointmentDialog};

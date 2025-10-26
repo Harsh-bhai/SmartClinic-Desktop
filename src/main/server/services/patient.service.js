@@ -1,11 +1,11 @@
 import { db } from "../utils/drizzle.js";
 import { patients } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import { randomUUID } from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
 // Create new patient
 export async function createPatient(data) {
-  data.id = randomUUID();
+  data.id = uuidv4();
   const result = await db.insert(patients).values(data).returning();
   return result[0];
 }

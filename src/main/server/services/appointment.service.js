@@ -1,21 +1,20 @@
 import { db } from "../utils/drizzle.js";
 import { appointments, patients } from "../drizzle/schema.js";
 import { eq, and, gte, lte } from "drizzle-orm";
-import { randomUUID } from "crypto";
 
 // 🧩 Create new appointment
 export async function createAppointment(data) {
-  data.id = randomUUID();
+  // data.id = uuidv4();
   const result = await db.insert(appointments).values(data).returning();
 
   // Return single flat object
   return {
     ...result[0],
-    name: data.name || null,
-    age: data.age || null,
-    gender: data.gender || null,
-    phone: data.phone || null,
-    address: data.address || null,
+    name: data.name,
+    age: data.age,
+    gender: data.gender,
+    phone: data.phone,
+    address: data.address,
   };
 }
 
@@ -24,15 +23,15 @@ export async function createAppointmentByBulk(dataArray) {
   const created = [];
 
   for (const data of dataArray) {
-    data.id = randomUUID();
+    // data.id = uuidv4();
     await db.insert(appointments).values(data.appointments).returning();
     created.push({
       ...result[0],
-      name: data.name || null,
-      age: data.age || null,
-      gender: data.gender || null,
-      phone: data.phone || null,
-      address: data.address || null,
+      name: data.name,
+      age: data.age,
+      gender: data.gender,
+      phone: data.phone,
+      address: data.address,
     });
   }
 
@@ -73,6 +72,7 @@ export async function getTodayAppointments() {
       id: appointments.id,
       treatmentStatus: appointments.treatmentStatus,
       paidStatus: appointments.paidStatus,
+      paid: appointments.paid,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
@@ -97,6 +97,7 @@ export async function getAppointmentById(id) {
       id: appointments.id,
       treatmentStatus: appointments.treatmentStatus,
       paidStatus: appointments.paidStatus,
+      paid: appointments.paid,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
@@ -110,7 +111,7 @@ export async function getAppointmentById(id) {
     .leftJoin(patients, eq(appointments.patientId, patients.id))
     .where(eq(appointments.id, id));
 
-  return result[0] || null;
+  return result[0];
 }
 
 // 🔍 Get appointments by patient ID
@@ -120,6 +121,7 @@ export async function getAppointmentsByPatientId(patientId) {
       id: appointments.id,
       treatmentStatus: appointments.treatmentStatus,
       paidStatus: appointments.paidStatus,
+      paid: appointments.paid,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
@@ -139,21 +141,23 @@ export async function getAppointmentsByPatientId(patientId) {
 
 // ✅ Update appointment by ID
 export async function updateAppointment(id, data) {
+  console.log("dataid: ", data);
+  
   const patient = {
-    patientId: data.patientId,
-    name: data.name || null,
-    age: data.age || null,
-    gender: data.gender || null,
-    phone: data.phone || null,
-    address: data.address || null,
+    id: data.patientId,
+    name: data.name,
+    age: data.age,
+    gender: data.gender,
+    phone: data.phone,
+    address: data.address,
   }
 
   const appointment = {
     id: data.id,
     patientId: data.patientId,
-    treatmentStatus: data.appointments?.treatmentStatus || null,
-    paidStatus: data.appointments?.paidStatus || null,
-    paid: data.appointments?.paid || null
+    treatmentStatus: data.treatmentStatus,
+    paidStatus: data.paidStatus,
+    paid: data.paid
   }
   await db
     .update(appointments)
@@ -163,7 +167,7 @@ export async function updateAppointment(id, data) {
   await db
     .update(patients)
     .set({ ...patient, updatedAt: new Date().toISOString() })
-    .where(eq(patients.id, data.patient.patientId));
+    .where(eq(patients.id, data.patientId));
 
   // Return updated record
   return getAppointmentById(id);

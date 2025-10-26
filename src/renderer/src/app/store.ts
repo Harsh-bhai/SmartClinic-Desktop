@@ -4,16 +4,7 @@ import { prescribedMedicinesReducer } from "@/features/fullPrescription/prescrib
 import { medicineInventoryReducer } from "@/features/medicineInventory";
 import { patientReducer } from "@/features/patients";
 import { combineReducers } from "@reduxjs/toolkit";
-import { persistReducer } from "redux-persist";
 import { appointmentReducer } from "@/features/appointments";
-import storage from "redux-persist/lib/storage";
-
-const persistConfig = {
-  key: "root",
-  version: 1,
-  storage,
-  whitelist: ["appointments"],
-};
 
 const reducer = combineReducers({
   prescription: prescriptionReducer,
@@ -23,10 +14,8 @@ const reducer = combineReducers({
   appointments: appointmentReducer,
 });
 
-const persistedReducer = persistReducer(persistConfig, reducer);
-
 const store = configureStore({
-  reducer: persistedReducer,
+  reducer,
 });
 
 export default store;

@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { PlusCircleIcon, Search } from "lucide-react";
 import {
   AppointmentTable,
-  AppointmentDialog,
+  AddAppointmentDialog,
 } from "@/features/appointments";
 import {
   ExtendedAppointment,
@@ -17,6 +17,7 @@ import {
   fetchExistingPatients,
   setSelectedAppointment,
 } from "@/features/appointments/appointmentSlice";
+import { ModifiedSearch } from "@renderer/components/modifiedSearch";
 
 const AppointmentPage = () => {
   const dispatch = useAppDispatch();
@@ -115,8 +116,10 @@ const AppointmentPage = () => {
                   key={patient.id}
                   className="p-2 hover:bg-gray-100 rounded-md cursor-pointer"
                   onClick={() => {
+                    console.log(patient, "patient");
+                    
                     setSearchPatient(patient.name);
-                    dispatch(setSelectedAppointment(patient as ExtendedAppointment));
+                    dispatch(setSelectedAppointment({...patient, patientId: patient.id} as ExtendedAppointment));
                     setDialogOpen(true);
                   }}
                 >
@@ -128,6 +131,8 @@ const AppointmentPage = () => {
               ))}
             </Card>
           )}
+
+          <ModifiedSearch />
 
           {/* No Patient Found */}
           {searchPatient && filteredPatients.length === 0 && (
@@ -149,7 +154,6 @@ const AppointmentPage = () => {
           <AppointmentTable
             newAppointments={filteredAppointments.new}
             loading={loading}
-            setDialogOpen={setDialogOpen}
           />
         </TabsContent>
 
@@ -157,13 +161,12 @@ const AppointmentPage = () => {
           <AppointmentTable
             completedAppointments={filteredAppointments.completed}
             loading={loading}
-            setDialogOpen={setDialogOpen}
           />
         </TabsContent>
       </Tabs>
 
       {/* Add Appointment Dialog */}
-      <AppointmentDialog
+      <AddAppointmentDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         selectedPatient={selectedAppointment}

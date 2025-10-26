@@ -20,18 +20,17 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAppDispatch } from "@/app/hooks";
 import {
-  createAppointment,
-  createAppointmentForNewPatient,
+  updateAppointment,
 } from "@/features/appointments/appointmentSlice";
 import type { ExtendedAppointment } from "@/features/appointments/appointmentSlice";
 
-interface AppointmentDialogProps {
+interface UpdateAppointmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedPatient?: ExtendedAppointment | null;
 }
 
-const AddAppointmentDialog: React.FC<AppointmentDialogProps> = ({
+const UpdateAppointmentDialog: React.FC<UpdateAppointmentDialogProps> = ({
   open,
   onOpenChange,
   selectedPatient = null,
@@ -85,17 +84,15 @@ const AddAppointmentDialog: React.FC<AppointmentDialogProps> = ({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "age" || name === "paid" ? Number(value) : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedPatient) {
-      await dispatch(createAppointment(formData));
-    } else {
-      await dispatch(createAppointmentForNewPatient(formData));
-    }
+    console.log(formData);
+    
+    await dispatch(updateAppointment(formData));
     onOpenChange(false);
   };
 
@@ -213,7 +210,7 @@ const AddAppointmentDialog: React.FC<AppointmentDialogProps> = ({
               Cancel
             </Button>
             <Button type="submit">
-              {selectedPatient ? "Create Appointment" : "Add Appointment"}
+              Update
             </Button>
           </div>
         </form>
@@ -222,4 +219,4 @@ const AddAppointmentDialog: React.FC<AppointmentDialogProps> = ({
   );
 };
 
-export  {AddAppointmentDialog};
+export  {UpdateAppointmentDialog};

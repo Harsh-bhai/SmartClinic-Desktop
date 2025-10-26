@@ -64,8 +64,8 @@ export const getAppointmentsByPatientIdApi = async (patientId: string) => {
 };
 
 // ✏️ Update appointment
-export const updateAppointmentApi = async (id: string, data: Appointment) => {
-  const response = await api.put(`/${id}`, data);
+export const updateAppointmentApi = async (data: Appointment) => {
+  const response = await api.put(`/${data.id}`, data);
   return response.data.data;
 };
 

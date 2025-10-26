@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAppDispatch } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -38,22 +38,23 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ExtendedAppointment } from "@/features/appointments/appointmentSlice";
+import { UpdateAppointmentDialog } from "./UpdateAppointmentDialog";
 
 interface AppointmentTableProps {
   newAppointments?: ExtendedAppointment[];
   completedAppointments?: ExtendedAppointment[];
   loading?: boolean;
-  setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const AppointmentTable: React.FC<AppointmentTableProps> = ({
   newAppointments = [],
   completedAppointments = [],
   loading = false,
-  setDialogOpen,
 }) => {
   const dispatch = useAppDispatch();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const { selectedAppointment } = useAppSelector((state) => state.appointments);
 
   const handleCheckboxChange = (id: string) => {
     setSelectedIds((prev) =>
@@ -71,6 +72,8 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
   };
 
   const handleEdit = (appointment: ExtendedAppointment) => {
+    console.log(appointment, "here");
+    
     dispatch(setSelectedAppointment(appointment));
     setDialogOpen(true);
   };
@@ -110,7 +113,7 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
       <TableCell>{appointment.age}</TableCell>
       <TableCell>{appointment.phone}</TableCell>
       <TableCell>{appointment.paidStatus ? "Paid" : "Unpaid"}</TableCell>
-      <TableCell>₹{appointment.paid || 0}</TableCell>
+      <TableCell>₹{appointment.paid}</TableCell>
       <TableCell>
         <Badge
           variant={
@@ -265,6 +268,11 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
           </TableBody>
         </Table>
       </div>
+            <UpdateAppointmentDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        selectedPatient={selectedAppointment}
+      />
     </Card>
   );
 };

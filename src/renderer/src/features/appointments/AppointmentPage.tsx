@@ -18,6 +18,7 @@ import {
   setSelectedAppointment,
 } from "@/features/appointments/appointmentSlice";
 import { ModifiedSearch } from "@renderer/components/modifiedSearch";
+import { ExistingPatientSearch } from "./components/ExistingPatientSearch";
 
 const AppointmentPage = () => {
   const dispatch = useAppDispatch();
@@ -28,7 +29,7 @@ const AppointmentPage = () => {
     existingPatients,
     loading,
     error,
-    selectedAppointment
+    selectedAppointment,
   } = useAppSelector((state) => state.appointments);
 
   const [searchAppointment, setSearchAppointment] = useState("");
@@ -47,7 +48,8 @@ const AppointmentPage = () => {
   // 🔍 Filter Logic
   // ───────────────────────────────────────────────────────────────
   const filteredAppointments = useMemo(() => {
-    if (!searchAppointment.trim()) return { new: newAppointments, completed: completedAppointments };
+    if (!searchAppointment.trim())
+      return { new: newAppointments, completed: completedAppointments };
 
     const query = searchAppointment.toLowerCase();
     return {
@@ -67,9 +69,7 @@ const AppointmentPage = () => {
   const filteredPatients = useMemo(() => {
     if (!searchPatient.trim()) return [];
     const query = searchPatient.toLowerCase();
-    return existingPatients.filter((p) =>
-      p.name.toLowerCase().includes(query),
-    );
+    return existingPatients.filter((p) => p.name.toLowerCase().includes(query));
   }, [searchPatient, existingPatients]);
 
   // ───────────────────────────────────────────────────────────────
@@ -97,50 +97,21 @@ const AppointmentPage = () => {
             className="pl-8"
           />
         </div>
+        <ExistingPatientSearch
+          patients={existingPatients}
+          onSelect={(patient) => {
+            dispatch(
+              setSelectedAppointment({
+                ...patient,
+                patientId: patient.id,
+              } as ExtendedAppointment),
+            );
+            setDialogOpen(true);
+          }}
+        />
 
         {/* Patient Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search existing patients..."
-            value={searchPatient}
-            onChange={(e) => setSearchPatient(e.target.value)}
-            className="pl-8"
-          />
 
-          {/* Patient Suggestions */}
-          {searchPatient && filteredPatients.length > 0 && (
-            <Card className="absolute top-10 w-full shadow-lg z-10 p-2 max-h-60 overflow-y-auto">
-              {filteredPatients.map((patient) => (
-                <div
-                  key={patient.id}
-                  className="p-2 hover:bg-gray-100 rounded-md cursor-pointer"
-                  onClick={() => {
-                    console.log(patient, "patient");
-                    
-                    setSearchPatient(patient.name);
-                    dispatch(setSelectedAppointment({...patient, patientId: patient.id} as ExtendedAppointment));
-                    setDialogOpen(true);
-                  }}
-                >
-                  <p className="font-medium">{patient.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {patient.gender}, {patient.age} yrs
-                  </p>
-                </div>
-              ))}
-            </Card>
-          )}
-
-          <ModifiedSearch />
-
-          {/* No Patient Found */}
-          {searchPatient && filteredPatients.length === 0 && (
-            <Card className="absolute top-10 w-full shadow-lg z-10 p-2 text-center text-sm text-gray-500">
-              No patient found for “{searchPatient}”
-            </Card>
-          )}
-        </div>
       </div>
 
       {/* Tabs Section */}

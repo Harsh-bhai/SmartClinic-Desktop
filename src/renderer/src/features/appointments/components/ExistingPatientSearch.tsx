@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Fuse from "fuse.js";
+import { useEffect, useState } from "react";
 import { SearchIcon, User } from "lucide-react";
 import {
   CommandDialog,
@@ -20,8 +19,8 @@ interface ExistingPatientSearchProps {
 }
 
 /**
- * 🔍 Fuzzy Search Command for Existing Patients
- * Uses Fuse.js to search by name, phone, gender, or age
+ * 🔍 Simple Search (no Fuse.js)
+ * Supports searching by Name or Phone number (case-insensitive, partial match)
  */
 export function ExistingPatientSearch({
   patients,
@@ -29,27 +28,28 @@ export function ExistingPatientSearch({
 }: ExistingPatientSearchProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Patient[]>([]);
-
-  // Initialize Fuse.js
-  const fuse = useMemo(
-    () =>
-      new Fuse(patients, {
-        keys: ["name", "phone"],
-        threshold: 0.3, // Lower = stricter match
-      }),
-    [patients]
-  );
+  const [results, setResults] = useState<Patient[]>(patients);
 
   // Handle Search Query
   useEffect(() => {
-    if (query.trim() === "") {
+    const q = query.trim().toLowerCase();
+
+    if (!q) {
       setResults(patients);
-    } else {
-      const fuzzyResults = fuse.search(query).map((r) => r.item);
-      setResults(fuzzyResults);
+      return;
     }
-  }, [query, fuse, patients]);
+
+    const filtered = patients.filter((p) => {
+      const nameMatch = p.name?.toLowerCase().includes(q);
+      const phoneMatch = p.phone?.toLowerCase().includes(q);
+      return nameMatch || phoneMatch;
+    });
+    console.log(`query "${q}"`);
+    console.log("filtered", filtered);
+    
+
+    setResults(filtered);
+  }, [query, patients]);
 
   // Optional: Keyboard Shortcut (Ctrl+K / Cmd+K)
   useEffect(() => {
@@ -87,13 +87,12 @@ export function ExistingPatientSearch({
       {/* Command Palette */}
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
-          placeholder="Search by Name, Phone, or Gender..."
+          placeholder="Search by Name or Phone..."
           value={query}
           onValueChange={setQuery}
         />
         <CommandList>
           <CommandEmpty>No matching patients found.</CommandEmpty>
-
           <CommandGroup heading="Patients">
             {results.map((patient) => (
               <CommandItem

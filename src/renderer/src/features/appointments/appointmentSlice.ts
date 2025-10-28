@@ -87,6 +87,7 @@ export const fetchExistingPatients = createAsyncThunk(
 export const createAppointment = createAsyncThunk(
   "appointments/create",
   async (data: Appointment, { rejectWithValue }) => {
+    data.id = uuidv4();
     try {
       const res = await createAppointmentApi(data);
       return res;
@@ -110,6 +111,8 @@ export const createAppointmentForNewPatient = createAsyncThunk(
         address: data.address!,
       };
       const newPatient = await createPatientApi(patientData);
+      console.log("newpatient", newPatient);
+      
       const appointmentData: Appointment = {
         ...data,
         createdAt: new Date().toISOString(),

@@ -46,7 +46,6 @@ export const getAllAppointments = async (req, res) => {
     const results = await appointmentService.getAllAppointments();
     res.status(200).json({
       success: true,
-      count: results.length,
       data: results,
     });
   } catch (error) {
@@ -65,7 +64,6 @@ export const getTodayAppointments = async (req, res) => {
     const results = await appointmentService.getTodayAppointments();
     res.status(200).json({
       success: true,
-      count: results.length,
       data: results,
     });
   } catch (error) {

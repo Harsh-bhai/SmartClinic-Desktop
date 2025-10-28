@@ -101,9 +101,7 @@ const UpdateAppointmentDialog: React.FC<UpdateAppointmentDialogProps> = ({
       <DialogContent className="sm:max-w-lg p-8 rounded-2xl min-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            {selectedPatient
-              ? "Create Appointment for Existing Patient"
-              : "Add New Appointment"}
+            Update Appointment
           </DialogTitle>
         </DialogHeader>
 

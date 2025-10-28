@@ -18,6 +18,11 @@ export async function createAppointment(data) {
   };
 }
 
+//FIXME - gettodayappointment is not sending all the appointments of today, may be due to difference in date format
+// 2025-10-26T04:25:01.320Z are not comming 
+// 2025-10-28T16:24:00.359Z is comming
+// why is same day time having different date
+
 // 🧩 Create appointments in bulk
 export async function createAppointmentByBulk(dataArray) {
   const created = [];

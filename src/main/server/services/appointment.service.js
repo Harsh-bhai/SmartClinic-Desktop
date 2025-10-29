@@ -1,10 +1,15 @@
 import { db } from "../utils/drizzle.js";
 import { appointments, patients } from "../drizzle/schema.js";
 import { eq, and, gte, lte } from "drizzle-orm";
+import { getLocalDateString, getLocalDateTimeString } from "../utils/date.js";
+
+//FIXME - gettodayappointment fixed, create appointment api is not calling after we select patient from patient serach box, arrived/completed is not persisting after refresh
 
 // 🧩 Create new appointment
 export async function createAppointment(data) {
-  // data.id = uuidv4();
+  data.createdAt = getLocalDateTimeString();
+  data.updatedAt = getLocalDateTimeString();
+
   const result = await db.insert(appointments).values(data).returning();
 
   // Return single flat object
@@ -18,18 +23,16 @@ export async function createAppointment(data) {
   };
 }
 
-//FIXME - gettodayappointment is not sending all the appointments of today, may be due to difference in date format
-// 2025-10-26T04:25:01.320Z are not comming 
-// 2025-10-28T16:24:00.359Z is comming
-// why is same day time having different date
-
 // 🧩 Create appointments in bulk
 export async function createAppointmentByBulk(dataArray) {
   const created = [];
 
   for (const data of dataArray) {
-    // data.id = uuidv4();
-    await db.insert(appointments).values(data.appointments).returning();
+    data.createdAt = getLocalDateTimeString();
+    data.updatedAt = getLocalDateTimeString();
+
+    const result = await db.insert(appointments).values(data.appointments).returning();
+
     created.push({
       ...result[0],
       name: data.name,
@@ -66,11 +69,11 @@ export async function getAllAppointments() {
   return results;
 }
 
-// 📅 Get today's appointments
+// 📅 Get today's appointments (purely local)
 export async function getTodayAppointments() {
-  const now = new Date();
-  const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-  const endOfDay = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+  const today = getLocalDateString();
+  const start = `${today} 00:00:00`;
+  const end = `${today} 23:59:59`;
 
   const results = await db
     .select({
@@ -89,7 +92,12 @@ export async function getTodayAppointments() {
     })
     .from(appointments)
     .leftJoin(patients, eq(appointments.patientId, patients.id))
-    .where(and(gte(appointments.createdAt, startOfDay), lte(appointments.createdAt, endOfDay)))
+    .where(
+      and(
+        gte(appointments.createdAt, start),
+        lte(appointments.createdAt, end)
+      )
+    )
     .orderBy(appointments.createdAt);
 
   return results;
@@ -146,8 +154,8 @@ export async function getAppointmentsByPatientId(patientId) {
 
 // ✅ Update appointment by ID
 export async function updateAppointment(id, data) {
-  console.log("dataid: ", data);
-  
+  data.updatedAt = getLocalDateTimeString();
+
   const patient = {
     id: data.patientId,
     name: data.name,
@@ -155,32 +163,36 @@ export async function updateAppointment(id, data) {
     gender: data.gender,
     phone: data.phone,
     address: data.address,
-  }
+  };
 
   const appointment = {
     id: data.id,
     patientId: data.patientId,
     treatmentStatus: data.treatmentStatus,
     paidStatus: data.paidStatus,
-    paid: data.paid
-  }
+    paid: data.paid,
+  };
+
   await db
     .update(appointments)
-    .set({ ...appointment, updatedAt: new Date().toISOString() })
+    .set({ ...appointment, updatedAt: getLocalDateTimeString() })
     .where(eq(appointments.id, id));
 
   await db
     .update(patients)
-    .set({ ...patient, updatedAt: new Date().toISOString() })
+    .set({ ...patient, updatedAt: getLocalDateTimeString() })
     .where(eq(patients.id, data.patientId));
 
-  // Return updated record
   return getAppointmentById(id);
 }
 
 // 🗑️ Delete appointment by ID
 export async function deleteAppointment(id) {
-  const result = await db.delete(appointments).where(eq(appointments.id, id)).returning();
+  const result = await db
+    .delete(appointments)
+    .where(eq(appointments.id, id))
+    .returning();
+
   return result[0];
 }
 

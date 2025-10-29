@@ -46,7 +46,6 @@ export function ExistingPatientSearch({
     });
     console.log(`query "${q}"`);
     console.log("filtered", filtered);
-    
 
     setResults(filtered);
   }, [query, patients]);
@@ -86,18 +85,26 @@ export function ExistingPatientSearch({
 
       {/* Command Palette */}
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput
-          placeholder="Search by Name or Phone..."
-          value={query}
-          onValueChange={setQuery}
-        />
-        <CommandList>
-          <CommandEmpty>No matching patients found.</CommandEmpty>
+        {/* Custom input instead of CommandInput */}
+        <div className="p-2">
+          <input
+            placeholder="Search by Name or Phone..."
+            className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        <CommandList className="max-h-[70vh] overflow-y-auto scrollbar-none">
+          {results.length === 0 && (
+            <CommandEmpty>No matching patients found.</CommandEmpty>
+          )}
+
           <CommandGroup heading="Patients">
             {results.map((patient) => (
               <CommandItem
                 key={patient.id}
-                value={patient.name}
+                value={`${patient.name} ${patient.phone}`} // important
                 onSelect={() => {
                   onSelect(patient);
                   setOpen(false);
@@ -113,8 +120,6 @@ export function ExistingPatientSearch({
               </CommandItem>
             ))}
           </CommandGroup>
-
-          <CommandSeparator />
         </CommandList>
       </CommandDialog>
     </>

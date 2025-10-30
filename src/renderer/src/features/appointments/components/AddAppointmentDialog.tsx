@@ -22,6 +22,7 @@ import { useAppDispatch } from "@/app/hooks";
 import {
   createAppointment,
   createAppointmentForNewPatient,
+  setSelectedAppointment,
 } from "@/features/appointments/appointmentSlice";
 import type { ExtendedAppointment } from "@/features/appointments/appointmentSlice";
 

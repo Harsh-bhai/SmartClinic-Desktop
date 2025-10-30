@@ -31,6 +31,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Brain, CalendarDays, FileText, MessageCircleMore, Pill, User, Users } from "lucide-react"
 
 const data = {
   user: {
@@ -47,12 +48,12 @@ const data = {
     {
       title: "Appointments",
       url: "/appointments",
-      icon: IconListDetails,
+      icon: CalendarDays,
     },
     {
       title: "Prescription",
       url: "/prescription",
-      icon: IconChartBar,
+      icon: FileText,
     },
     {
       title: "Analytics",
@@ -62,12 +63,12 @@ const data = {
     {
       title: "Roles and Access",
       url: "/roles-and-access",
-      icon: IconFolder,
+      icon: Users,
     },
     {
       title: "Patients",
       url: "/patients",
-      icon: IconUsers,
+      icon: User,
     },
     {
       title: "Form Settings",
@@ -77,12 +78,12 @@ const data = {
     {
       title: "Messages",
       url: "/messages",
-      icon: IconUsers,
+      icon: MessageCircleMore,
     },
     {
       title: "Medicine Inventory",
       url: "/medicine-inventory",
-      icon: IconMedicineSyrup,
+      icon: Pill,
     },
   ],
   navClouds: [
@@ -164,7 +165,7 @@ const data = {
     {
       name: "AI Assistant",
       url: "#",
-      icon: IconFileWord,
+      icon: Brain,
     },
   ],
 }

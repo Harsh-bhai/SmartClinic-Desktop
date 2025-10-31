@@ -3,7 +3,7 @@ import { appointments, patients } from "../drizzle/schema.js";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { getLocalDateString, getLocalDateTimeString } from "../utils/date.js";
 
-//FIXME - gettodayappointment fixed, create appointment api is not calling after we select patient from patient serach box, arrived/completed is not persisting after refresh
+//FIXME - arrived/completed is not persisting after refresh, completed appointmets removed after refresh, there is an anomaly on queue no. also(check it out first)
 
 // 🧩 Create new appointment
 export async function createAppointment(data) {

@@ -80,7 +80,12 @@ const AppointmentPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Appointments</h1>
-        <Button onClick={() => setDialogOpen(true)}>
+        <Button
+          onClick={() => {
+            dispatch(setSelectedAppointment(null)); // reset any previous patient
+            setDialogOpen(true);
+          }}
+        >
           <PlusCircleIcon size={16} className="mr-1" /> Add Appointment
         </Button>
       </div>
@@ -111,7 +116,6 @@ const AppointmentPage = () => {
         />
 
         {/* Patient Search */}
-
       </div>
 
       {/* Tabs Section */}

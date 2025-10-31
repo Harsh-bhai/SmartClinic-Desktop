@@ -221,7 +221,7 @@ const appointmentSlice = createSlice({
 
     setSelectedAppointment: (
       state,
-      action: PayloadAction<ExtendedAppointment>,
+      action: PayloadAction<ExtendedAppointment | null>,
     ) => {
       state.selectedAppointment = action.payload;
     },

@@ -4,6 +4,7 @@ import { eq, and, gte, lte } from "drizzle-orm";
 import { getLocalDateString, getLocalDateTimeString } from "../utils/date.js";
 
 //FIXME - arrived/completed is not persisting after refresh, completed appointmets removed after refresh, there is an anomaly on queue no. also(check it out first)
+// i have to add thunk from chatgpt completeAppointment
 
 // 🧩 Create new appointment
 export async function createAppointment(data) {

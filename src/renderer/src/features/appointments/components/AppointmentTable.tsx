@@ -26,6 +26,7 @@ import {
   deleteAppointment,
   deleteAppointmentsByBulk,
   setSelectedAppointment,
+  completeAppointment,
 } from "@/features/appointments/appointmentSlice";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -91,7 +92,7 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
   };
 
   const handleBulkDone = () => {
-    selectedIds.forEach((id) => dispatch(markCompleted(id)));
+    selectedIds.forEach((id) => dispatch(completeAppointment(id)));
     setSelectedIds([]);
   };
 
@@ -172,7 +173,7 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
 
               {!isCompleted && (
                 <DropdownMenuItem
-                  onClick={() => dispatch(markCompleted(appointment.id!))}
+                  onClick={() => dispatch(completeAppointment(appointment.id!))}
                 >
                   <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Done
                 </DropdownMenuItem>

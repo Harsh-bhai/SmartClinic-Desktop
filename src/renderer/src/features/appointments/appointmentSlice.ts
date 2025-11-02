@@ -22,6 +22,7 @@ export interface AppointmentMeta {
   id: string; // Local UUID for tracking
   arrived: boolean;
   queueNumber: number;
+  completedAt?: string;
 }
 
 export interface ExtendedAppointment extends Appointment {
@@ -166,6 +167,26 @@ export const deleteAppointmentsByBulk = createAsyncThunk(
   },
 );
 
+export const completeAppointment = createAsyncThunk(
+  "appointments/complete",
+  async (id: string, { getState, dispatch, rejectWithValue }) => {
+    const state = getState() as { appointments: AppointmentState };
+    const appointment = state.appointments.newAppointments.find(
+      (a) => a.id === id,
+    );
+    if (!appointment) return rejectWithValue("Appointment not found");
+
+    const updated = { ...appointment, treatmentStatus: "complete" };
+    try {
+      await updateAppointmentApi(updated);
+      dispatch(markCompleted(id));
+      return updated;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Failed to mark complete");
+    }
+  },
+);
+
 // --------------------------------------------------
 // SLICE
 // --------------------------------------------------
@@ -201,11 +222,23 @@ const appointmentSlice = createSlice({
       const index = state.newAppointments.findIndex((a) => a.id === id);
       if (index !== -1) {
         const [done] = state.newAppointments.splice(index, 1);
-        state.completedAppointments.push({
-          ...done,
-          treatmentStatus: "complete",
-        });
-        delete state.meta[id];
+
+        // Record completion time and keep existing queueNumber
+        const existingMeta = state.meta[id] || {
+          id,
+          arrived: false,
+          queueNumber: done.queueNumber ?? state.newAppointments.length + 1,
+        };
+
+        state.meta[id] = {
+          ...existingMeta,
+          completedAt: new Date().toISOString(),
+          // keep queueNumber unchanged
+          queueNumber: existingMeta.queueNumber,
+        };
+
+        const updated = { ...done, treatmentStatus: "complete" as const };
+        state.completedAppointments.push(updated);
       }
     },
 
@@ -225,48 +258,64 @@ const appointmentSlice = createSlice({
       })
       .addCase(fetchAppointments.fulfilled, (state, action) => {
         state.loading = false;
-
         const fetched = action.payload;
 
-        // Separate new and completed appointments based on treatmentStatus
+        // Build new appointments (not completed)
         const freshNewAppointments = fetched
           .filter((appt) => appt.treatmentStatus !== "complete")
           .map((appt, i) => {
+            // try persisted meta first
             const metaInfo = state.meta[appt.id!] || {
               id: appt.id!,
               arrived: false,
               queueNumber: i + 1,
             };
+            // ensure queueNumber exists
             return { ...appt, ...metaInfo };
           });
 
+        // Build completed appointments, prefer persisted queueNumber + completedAt
         const freshCompletedAppointments = fetched
           .filter((appt) => appt.treatmentStatus === "complete")
           .map((appt) => {
             const metaInfo = state.meta[appt.id!] || {
               id: appt.id!,
               arrived: false,
-              queueNumber: 0,
+              // if we have a previous completed appointment in state, try to reuse its queueNumber
+              queueNumber:
+                state.completedAppointments.find((a) => a.id === appt.id)
+                  ?.queueNumber ??
+                state.newAppointments.find((a) => a.id === appt.id)
+                  ?.queueNumber ??
+                0,
+              completedAt: undefined,
             };
             return { ...appt, ...metaInfo };
           });
 
-        // Merge with persisted ones, avoiding duplicates
-        const completedIds = new Set(
-          state.completedAppointments.map((a) => a.id),
+        // Replace completedAppointments with DB's latest info but maintain ordering via completedAt
+        // If completedAt is missing, fallback to updatedAt (DB) or keep as-is
+        state.completedAppointments = freshCompletedAppointments.sort(
+          (a, b) => {
+            const aTime = (state.meta[a.id!]?.completedAt ??
+              a.updatedAt ??
+              "") as string;
+            const bTime = (state.meta[b.id!]?.completedAt ??
+              b.updatedAt ??
+              "") as string;
+            const ta = aTime ? new Date(aTime).getTime() : 0;
+            const tb = bTime ? new Date(bTime).getTime() : 0;
+            return ta - tb;
+          },
         );
-        const mergedCompleted = [
-          ...state.completedAppointments.filter((a) => !completedIds.has(a.id)),
-          ...freshCompletedAppointments,
-        ];
 
-        // Update state
+        // Replace newAppointments and sort (arrived first, then by queueNumber)
         state.newAppointments = freshNewAppointments.sort((a, b) => {
           if (a.arrived === b.arrived) return a.queueNumber - b.queueNumber;
           return a.arrived ? -1 : 1;
         });
-        state.completedAppointments = mergedCompleted;
       })
+
       .addCase(fetchAppointments.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;

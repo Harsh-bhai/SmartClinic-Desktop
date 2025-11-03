@@ -171,18 +171,16 @@ export const completeAppointment = createAsyncThunk(
   "appointments/complete",
   async (id: string, { getState, dispatch, rejectWithValue }) => {
     const state = getState() as { appointments: AppointmentState };
-    const appointment = state.appointments.newAppointments.find(
-      (a) => a.id === id,
-    );
-    if (!appointment) return rejectWithValue("Appointment not found");
+    const appt = state.appointments.newAppointments.find((a) => a.id === id);
+    if (!appt) return rejectWithValue("Appointment not found");
 
-    const updated = { ...appointment, treatmentStatus: "complete" };
+    const updated = { ...appt, treatmentStatus: "complete" };
     try {
       await updateAppointmentApi(updated);
-      dispatch(markCompleted(id));
-      return updated;
+      dispatch(markCompleted(id)); // update locally
+      return id;
     } catch (err: any) {
-      return rejectWithValue(err.message || "Failed to mark complete");
+      return rejectWithValue(err.message || "Failed to complete");
     }
   },
 );
@@ -197,49 +195,40 @@ const appointmentSlice = createSlice({
   reducers: {
     markArrivedToggle: (state, action: PayloadAction<string>) => {
       const id = action.payload;
-
-      // Update meta
-      const meta = state.meta[id];
-      if (meta) {
-        meta.arrived = !meta.arrived;
-      }
-
-      // Toggle arrived
       const appt = state.newAppointments.find((a) => a.id === id);
-      if (appt) {
-        appt.arrived = !appt.arrived;
-        state.meta[id].arrived = appt.arrived;
-      }
+      if (!appt) return;
 
-      // Keep queue numbers constant, just reorder visually
+      const newVal = !appt.arrived;
+      appt.arrived = newVal;
+      state.meta[id] = {
+        ...(state.meta[id] || { id, queueNumber: appt.queueNumber }),
+        arrived: newVal,
+      };
+
+      // sort visually (arrived first)
       state.newAppointments.sort((a, b) => {
         if (a.arrived === b.arrived) return a.queueNumber - b.queueNumber;
-        return a.arrived ? -1 : 1; // arrived first
+        return a.arrived ? -1 : 1;
       });
     },
+
     markCompleted: (state, action: PayloadAction<string>) => {
       const id = action.payload;
       const index = state.newAppointments.findIndex((a) => a.id === id);
-      if (index !== -1) {
-        const [done] = state.newAppointments.splice(index, 1);
+      if (index === -1) return;
 
-        // Record completion time and keep existing queueNumber
-        const existingMeta = state.meta[id] || {
-          id,
-          arrived: false,
-          queueNumber: done.queueNumber ?? state.newAppointments.length + 1,
-        };
+      const [done] = state.newAppointments.splice(index, 1);
+      const meta = state.meta[id] || {
+        id,
+        arrived: false,
+        queueNumber: done.queueNumber,
+      };
+      state.meta[id] = { ...meta, completedAt: new Date().toISOString() };
 
-        state.meta[id] = {
-          ...existingMeta,
-          completedAt: new Date().toISOString(),
-          // keep queueNumber unchanged
-          queueNumber: existingMeta.queueNumber,
-        };
-
-        const updated = { ...done, treatmentStatus: "complete" as const };
-        state.completedAppointments.push(updated);
-      }
+      state.completedAppointments.push({
+        ...done,
+        treatmentStatus: "complete",
+      });
     },
 
     setSelectedAppointment: (
@@ -260,60 +249,33 @@ const appointmentSlice = createSlice({
         state.loading = false;
         const fetched = action.payload;
 
-        // Build new appointments (not completed)
-        const freshNewAppointments = fetched
-          .filter((appt) => appt.treatmentStatus !== "complete")
-          .map((appt, i) => {
-            // try persisted meta first
-            const metaInfo = state.meta[appt.id!] || {
-              id: appt.id!,
-              arrived: false,
-              queueNumber: i + 1,
-            };
-            // ensure queueNumber exists
-            return { ...appt, ...metaInfo };
-          });
+        // build both arrays from DB + meta
+        const newList: ExtendedAppointment[] = [];
+        const completedList: ExtendedAppointment[] = [];
 
-        // Build completed appointments, prefer persisted queueNumber + completedAt
-        const freshCompletedAppointments = fetched
-          .filter((appt) => appt.treatmentStatus === "complete")
-          .map((appt) => {
-            const metaInfo = state.meta[appt.id!] || {
-              id: appt.id!,
-              arrived: false,
-              // if we have a previous completed appointment in state, try to reuse its queueNumber
-              queueNumber:
-                state.completedAppointments.find((a) => a.id === appt.id)
-                  ?.queueNumber ??
-                state.newAppointments.find((a) => a.id === appt.id)
-                  ?.queueNumber ??
-                0,
-              completedAt: undefined,
-            };
-            return { ...appt, ...metaInfo };
-          });
+        for (const appt of fetched) {
+          const meta = state.meta[appt.id!] || {
+            id: appt.id!,
+            arrived: false,
+            queueNumber: newList.length + 1,
+          };
 
-        // Replace completedAppointments with DB's latest info but maintain ordering via completedAt
-        // If completedAt is missing, fallback to updatedAt (DB) or keep as-is
-        state.completedAppointments = freshCompletedAppointments.sort(
-          (a, b) => {
-            const aTime = (state.meta[a.id!]?.completedAt ??
-              a.updatedAt ??
-              "") as string;
-            const bTime = (state.meta[b.id!]?.completedAt ??
-              b.updatedAt ??
-              "") as string;
-            const ta = aTime ? new Date(aTime).getTime() : 0;
-            const tb = bTime ? new Date(bTime).getTime() : 0;
-            return ta - tb;
-          },
-        );
+          const extended = { ...appt, ...meta };
 
-        // Replace newAppointments and sort (arrived first, then by queueNumber)
-        state.newAppointments = freshNewAppointments.sort((a, b) => {
+          if (appt.treatmentStatus === "complete") completedList.push(extended);
+          else newList.push(extended);
+        }
+
+        // sort & assign
+        state.newAppointments = newList.sort((a, b) => {
           if (a.arrived === b.arrived) return a.queueNumber - b.queueNumber;
           return a.arrived ? -1 : 1;
         });
+
+        state.completedAppointments = completedList.sort(
+          (a, b) =>
+            new Date(a.updatedAt!).getTime() - new Date(b.updatedAt!).getTime(),
+        );
       })
 
       .addCase(fetchAppointments.rejected, (state, action) => {
@@ -404,7 +366,8 @@ export const { markArrivedToggle, markCompleted, setSelectedAppointment } =
 const persistConfig = {
   key: "appointmentMeta",
   storage,
-  whitelist: ["meta", "newAppointments", "completedAppointments"],
+  // whitelist: ["meta", "newAppointments", "completedAppointments"],
+  whitelist: ["meta"],
 };
 
 export const appointmentReducer = persistReducer(

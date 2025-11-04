@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { v4 as uuidv4 } from "uuid";
-
+import {getLocalDateString} from "./utils/date"
 import {
   Appointment,
   createAppointmentApi,
@@ -38,6 +38,7 @@ export interface AppointmentState {
   loading: boolean;
   error: string | null;
   meta: Record<string, AppointmentMeta>; // Persisted metadata
+  lastQueueResetDate?: string;
 }
 
 // --------------------------------------------------
@@ -52,6 +53,7 @@ const initialState: AppointmentState = {
   loading: false,
   error: null,
   meta: {},
+  lastQueueResetDate: undefined,
 };
 
 // --------------------------------------------------
@@ -169,16 +171,15 @@ export const deleteAppointmentsByBulk = createAsyncThunk(
 
 export const completeAppointment = createAsyncThunk(
   "appointments/complete",
-  async (id: string, { getState, dispatch, rejectWithValue }) => {
+  async (id: string, { getState, rejectWithValue }) => {
     const state = getState() as { appointments: AppointmentState };
     const appt = state.appointments.newAppointments.find((a) => a.id === id);
     if (!appt) return rejectWithValue("Appointment not found");
 
     const updated = { ...appt, treatmentStatus: "complete" };
     try {
-      await updateAppointmentApi(updated);
-      dispatch(markCompleted(id)); // update locally
-      return id;
+      const res = await updateAppointmentApi(updated);
+      return res; // return the updated appointment object
     } catch (err: any) {
       return rejectWithValue(err.message || "Failed to complete");
     }
@@ -218,17 +219,25 @@ const appointmentSlice = createSlice({
       if (index === -1) return;
 
       const [done] = state.newAppointments.splice(index, 1);
+
       const meta = state.meta[id] || {
         id,
-        arrived: false,
+        arrived: done.arrived,
         queueNumber: done.queueNumber,
       };
-      state.meta[id] = { ...meta, completedAt: new Date().toISOString() };
+      state.meta[id] = {
+        ...meta,
+        completedAt: new Date().toISOString(),
+      };
 
-      state.completedAppointments.push({
+      const completedAppointment: ExtendedAppointment = {
         ...done,
         treatmentStatus: "complete",
-      });
+        queueNumber: meta.queueNumber,
+        arrived: meta.arrived,
+      };
+
+      state.completedAppointments.push(completedAppointment);
     },
 
     setSelectedAppointment: (
@@ -246,37 +255,56 @@ const appointmentSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchAppointments.fulfilled, (state, action) => {
-        state.loading = false;
-        const fetched = action.payload;
+  state.loading = false;
+  const fetched = action.payload;
 
-        // build both arrays from DB + meta
-        const newList: ExtendedAppointment[] = [];
-        const completedList: ExtendedAppointment[] = [];
+  const today = getLocalDateString();
 
-        for (const appt of fetched) {
-          const meta = state.meta[appt.id!] || {
-            id: appt.id!,
-            arrived: false,
-            queueNumber: newList.length + 1,
-          };
+  // ✅ Reset meta + queue numbers when day changes
+  if (state.lastQueueResetDate !== today) {
+    state.meta = {};
+    state.newAppointments = [];
+    state.completedAppointments = [];
+    state.lastQueueResetDate = today;
+  }
 
-          const extended = { ...appt, ...meta };
+  const newList: ExtendedAppointment[] = [];
+  const completedList: ExtendedAppointment[] = [];
 
-          if (appt.treatmentStatus === "complete") completedList.push(extended);
-          else newList.push(extended);
-        }
+  // Compute global max queue once from state.meta
+  const existingQueues = Object.values(state.meta).map(m => m.queueNumber);
+  let currentMaxQueue = existingQueues.length > 0 ? Math.max(...existingQueues) : 0;
 
-        // sort & assign
-        state.newAppointments = newList.sort((a, b) => {
-          if (a.arrived === b.arrived) return a.queueNumber - b.queueNumber;
-          return a.arrived ? -1 : 1;
-        });
+  for (const appt of fetched) {
+    let meta = state.meta[appt.id!];
 
-        state.completedAppointments = completedList.sort(
-          (a, b) =>
-            new Date(a.updatedAt!).getTime() - new Date(b.updatedAt!).getTime(),
-        );
-      })
+    if (!meta) {
+      currentMaxQueue += 1;
+      meta = { id: appt.id!, arrived: false, queueNumber: currentMaxQueue };
+      state.meta[appt.id!] = meta;
+    }
+
+    const extended = { ...appt, ...meta };
+    if (appt.treatmentStatus === "complete") completedList.push(extended);
+    else newList.push(extended);
+  }
+
+  state.newAppointments = newList.sort((a, b) => {
+    if (a.arrived === b.arrived) return a.queueNumber - b.queueNumber;
+    return a.arrived ? -1 : 1;
+  });
+
+  state.completedAppointments = completedList.sort((a, b) => {
+    const at = state.meta[a.id!]?.completedAt
+      ? new Date(state.meta[a.id!].completedAt!).getTime()
+      : 0;
+    const bt = state.meta[b.id!]?.completedAt
+      ? new Date(state.meta[b.id!].completedAt!).getTime()
+      : 0;
+    return at - bt;
+  });
+})
+
 
       .addCase(fetchAppointments.rejected, (state, action) => {
         state.loading = false;
@@ -289,35 +317,52 @@ const appointmentSlice = createSlice({
       })
 
       // Create appointment
-      .addCase(
-        createAppointment.fulfilled,
-        (state, action: PayloadAction<ExtendedAppointment>) => {
-          const appt = action.payload;
-          appt.id = uuidv4();
+      .addCase(completeAppointment.fulfilled, (state, action) => {
+        const appt = action.payload as ExtendedAppointment;
+        const id = appt.id!;
+        const index = state.newAppointments.findIndex((a) => a.id === id);
+        if (index === -1) return;
 
-          const metaInfo: AppointmentMeta = {
-            id: appt.id,
-            arrived: false,
-            queueNumber: state.newAppointments.length + 1,
-          };
+        const [done] = state.newAppointments.splice(index, 1);
+        const meta = state.meta[id] || {
+          id,
+          arrived: done.arrived,
+          queueNumber: done.queueNumber,
+        };
+        state.meta[id] = { ...meta, completedAt: new Date().toISOString() };
 
-          state.meta[appt.id] = metaInfo;
-          state.newAppointments.push({ ...appt, ...metaInfo });
-        },
-      )
+        state.completedAppointments.push({
+          ...appt,
+          queueNumber: meta.queueNumber,
+          arrived: meta.arrived,
+          treatmentStatus: "complete",
+        });
+      })
 
       // Create for new patient
       .addCase(createAppointmentForNewPatient.fulfilled, (state, action) => {
         const appt = action.payload;
 
+        const existingQueues = Object.values(state.meta).map(
+          (m) => m.queueNumber,
+        );
+        const maxQueue =
+          existingQueues.length > 0 ? Math.max(...existingQueues) : 0;
+
         const metaInfo: AppointmentMeta = {
           id: appt.id ?? uuidv4(),
           arrived: false,
-          queueNumber: state.newAppointments.length + 1,
+          queueNumber: maxQueue + 1,
         };
 
-        state.meta[appt.id] = metaInfo;
-        state.newAppointments.push({ ...appt, ...metaInfo });
+        state.meta[appt.id!] = metaInfo;
+
+        const extended = {
+          ...appt,
+          ...metaInfo,
+          treatmentStatus: appt.treatmentStatus ?? "pending",
+        };
+        state.newAppointments.push(extended);
       })
 
       // Update
@@ -341,6 +386,41 @@ const appointmentSlice = createSlice({
           (a) => a.id !== action.payload,
         );
         delete state.meta[action.payload];
+      })
+      // Create appointment (existing patient)
+      .addCase(createAppointment.fulfilled, (state, action) => {
+        const appt = action.payload;
+
+        // Find current max queue number from meta
+        const existingQueues = Object.values(state.meta).map(
+          (m) => m.queueNumber,
+        );
+        const maxQueue =
+          existingQueues.length > 0 ? Math.max(...existingQueues) : 0;
+
+        const metaInfo: AppointmentMeta = {
+          id: appt.id ?? uuidv4(),
+          arrived: false,
+          queueNumber: maxQueue + 1,
+        };
+
+        // Store meta
+        state.meta[appt.id!] = metaInfo;
+
+        // Extend appointment and add to list immediately
+        const extended: ExtendedAppointment = {
+          ...appt,
+          ...metaInfo,
+          treatmentStatus: appt.treatmentStatus ?? "pending",
+        };
+
+        state.newAppointments.push(extended);
+
+        // Optional: sort arrived ones first
+        state.newAppointments.sort((a, b) => {
+          if (a.arrived === b.arrived) return a.queueNumber - b.queueNumber;
+          return a.arrived ? -1 : 1;
+        });
       })
 
       // Bulk delete
@@ -367,7 +447,8 @@ const persistConfig = {
   key: "appointmentMeta",
   storage,
   // whitelist: ["meta", "newAppointments", "completedAppointments"],
-  whitelist: ["meta"],
+  // whitelist: ["meta"],
+  whitelist: ["meta", "lastQueueResetDate"],
 };
 
 export const appointmentReducer = persistReducer(

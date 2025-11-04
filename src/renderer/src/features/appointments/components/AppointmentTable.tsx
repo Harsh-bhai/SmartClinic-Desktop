@@ -118,7 +118,7 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
       <TableCell>
         <Badge
           variant={
-            appointment.treatmentStatus === "completed"
+            appointment.treatmentStatus === "complete"
               ? "secondary"
               : appointment.arrived
               ? "default"

@@ -10,7 +10,6 @@ import {
   updateAppointmentApi,
   deleteAppointmentApi,
   deleteAppointmentsByBulkApi,
-  getAllAppointmentsApi,
 } from "./appointmentApi";
 import { createPatientApi, getAllPatientsApi, Patient } from "../patients";
 
@@ -446,8 +445,6 @@ export const { markArrivedToggle, markCompleted, setSelectedAppointment } =
 const persistConfig = {
   key: "appointmentMeta",
   storage,
-  // whitelist: ["meta", "newAppointments", "completedAppointments"],
-  // whitelist: ["meta"],
   whitelist: ["meta", "lastQueueResetDate"],
 };
 

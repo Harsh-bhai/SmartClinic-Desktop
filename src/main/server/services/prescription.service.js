@@ -2,6 +2,7 @@ import { db } from "../utils/drizzle.js";
 import { prescriptions } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import {uuidv4} from "crypto"
+import { getLocalDateTimeString } from "../utils/date.js";
 
 export async function createPrescription(data) {
   const id = uuidv4();
@@ -19,17 +20,17 @@ export async function createPrescription(data) {
 }
 
 export async function getAllPrescriptions() {
-  return await db.select().from(prescriptions).orderBy(prescription.createdAt);
+  return await db.select().from(prescriptions).orderBy(prescriptions.createdAt);
 }
 
 
 export async function getPrescriptionsByPatient(patientId) {
-  return await db.select().from(prescriptions).where(eq(prescription.patientId, patientId));
+  return await db.select().from(prescriptions).where(eq(prescriptions.patientId, patientId));
 }
 
 
 export async function getPrescriptionById(id) {
-  const rows = await db.select().from(prescriptions).where(eq(prescription.id, id));
+  const rows = await db.select().from(prescriptions).where(eq(prescriptions.id, id));
   return rows[0] || null;
 }
 
@@ -40,13 +41,13 @@ export async function updatePrescription(id, data) {
     examinationFindings: data.examinationFindings,
     advice: data.advice,
     nextVisit: data.nextVisit,
-    updatedAt: new Date().toISOString(),
+    updatedAt: getLocalDateTimeString()
   };
 
   const result = await db
     .update(prescriptions)
     .set(toSet)
-    .where(eq(prescription.id, id))
+    .where(eq(prescriptions.id, id))
     .returning();
 
   return result[0] || null;
@@ -54,6 +55,6 @@ export async function updatePrescription(id, data) {
 
 
 export async function deletePrescription(id) {
-  await db.delete(prescriptions).where(eq(prescription.id, id));
+  await db.delete(prescriptions).where(eq(prescriptions.id, id));
   return { success: true, message: "Prescription deleted successfully" };
 }

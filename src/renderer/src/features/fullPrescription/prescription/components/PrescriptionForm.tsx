@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useAppDispatch } from "@/app/hooks";
+import { updatePrescription } from "../prescriptionSlice";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,20 +13,25 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { PrescriptionPreview } from "./PrescriptionPreview";
 
 interface PrescriptionFormProps {
   visitId: string;
+  existingPrescription: any;
 }
 
-export function PrescriptionForm({ visitId }: PrescriptionFormProps) {
-  const [activeTab, setActiveTab] = useState("patient");
-  const [patient, setPatient] = useState({
-    name: "",
-    age: "",
-    medicalHistory: "",
-    lifestyle: "",
+export function PrescriptionForm({
+  visitId,
+  existingPrescription,
+}: PrescriptionFormProps) {
+  const dispatch = useAppDispatch();
+
+  const [activeTab, setActiveTab] = useState("details");
+  const [prescriptionData, setPrescriptionData] = useState({
+    reason: "",
+    examinationFindings: "",
+    advice: "",
+    nextVisit: "",
   });
 
   const [medForm, setMedForm] = useState({
@@ -37,19 +44,30 @@ export function PrescriptionForm({ visitId }: PrescriptionFormProps) {
 
   const [medicines, setMedicines] = useState<any[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
 
-  const toBullets = (text: string) =>
-    text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
+  // 🧠 Load data from Redux
+  useEffect(() => {
+    if (existingPrescription) {
+      setPrescriptionData({
+        reason: existingPrescription.reason || "",
+        examinationFindings: existingPrescription.examinationFindings || "",
+        advice: existingPrescription.advice || "",
+        nextVisit: existingPrescription.nextVisit || "",
+      });
+    }
+  }, [existingPrescription]);
 
+  // 💾 Save to backend
+  const handleSave = () => {
+    dispatch(
+      updatePrescription({
+        id: visitId,
+        data: prescriptionData,
+      }),
+    );
+  };
+
+  // 💊 Medicine CRUD
   const addOrUpdateMedicine = () => {
     if (editingIndex !== null) {
       const updated = [...medicines];
@@ -68,106 +86,85 @@ export function PrescriptionForm({ visitId }: PrescriptionFormProps) {
     });
   };
 
-  const editMedicine = (index: number) => {
-    setMedForm(medicines[index]);
-    setEditingIndex(index);
-  };
-
-  const deleteMedicine = (index: number) => {
-    setMedicines(medicines.filter((_, i) => i !== index));
-  };
-
-  const generatePDF = () => {
-    const doc = new jsPDF();
-    doc.setFont("helvetica");
-    doc.setFontSize(12);
-    doc.text("Dr. Smile Dental Clinic", 14, 20);
-    doc.text("123 Main Street, City", 14, 28);
-    doc.text("Phone: +91 9876543210 | Timing: 10am - 7pm", 14, 36);
-
-    doc.text("Patient Details:", 14, 50);
-    doc.text(`Name: ${patient.name}`, 14, 58);
-    doc.text(`Age: ${patient.age}`, 14, 66);
-
-    if (patient.medicalHistory.trim()) {
-      doc.text("Medical History:", 14, 74);
-      let y = 82;
-      toBullets(patient.medicalHistory).forEach((line) => {
-        doc.text(`• ${line}`, 20, y);
-        y += 8;
-      });
-    }
-
-    if (medicines.length > 0) {
-      autoTable(doc, {
-        startY: 120,
-        head: [["Medicine", "Dose", "Frequency", "Duration", "Remarks"]],
-        body: medicines.map((m) => [
-          m.name,
-          m.dose,
-          m.frequency.join(", "),
-          m.duration,
-          m.remarks,
-        ]),
-        theme: "grid",
-      });
-    }
-
-    doc.save(`prescription_${visitId}.pdf`);
-  };
-
   return (
     <div className="flex h-screen">
       {/* Left Side: Form */}
       <div className="w-1/2 p-6 overflow-y-auto">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="patient">Patient</TabsTrigger>
+            <TabsTrigger value="details">Prescription</TabsTrigger>
             <TabsTrigger value="medicines">Medicines</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="patient">
-            <label className="block mt-2 font-medium text-left p-2">Name</label>
-            <Input
-              placeholder="Enter patient name"
-              value={patient.name}
-              onChange={(e) => setPatient({ ...patient, name: e.target.value })}
-            />
-
-            <label className="block mt-4 font-medium text-left p-2">Age</label>
-            <Input
-              placeholder="Enter age"
-              value={patient.age}
-              onChange={(e) => setPatient({ ...patient, age: e.target.value })}
-            />
-
-            <label className="block mt-4 font-medium text-left p-2">
-              Medical History
-            </label>
+          {/* Prescription Details */}
+          <TabsContent value="details">
+            <label className="block mt-4 text-left">Reason</label>
             <Textarea
-              placeholder="Enter medical history"
-              value={patient.medicalHistory}
+              placeholder="Enter reason for visit"
+              value={prescriptionData.reason}
               onChange={(e) =>
-                setPatient({ ...patient, medicalHistory: e.target.value })
+                setPrescriptionData({
+                  ...prescriptionData,
+                  reason: e.target.value,
+                })
               }
             />
+
+            <label className="block mt-4 text-left">Examination Findings</label>
+            <Textarea
+              placeholder="Enter examination findings"
+              value={prescriptionData.examinationFindings}
+              onChange={(e) =>
+                setPrescriptionData({
+                  ...prescriptionData,
+                  examinationFindings: e.target.value,
+                })
+              }
+            />
+
+            <label className="block mt-4 text-left">Advice</label>
+            <Textarea
+              placeholder="Enter advice"
+              value={prescriptionData.advice}
+              onChange={(e) =>
+                setPrescriptionData({
+                  ...prescriptionData,
+                  advice: e.target.value,
+                })
+              }
+            />
+
+            <label className="block mt-4 text-left">Next Visit Date</label>
+            <Input
+              type="date"
+              value={prescriptionData.nextVisit}
+              onChange={(e) =>
+                setPrescriptionData({
+                  ...prescriptionData,
+                  nextVisit: e.target.value,
+                })
+              }
+            />
+
+            <Button className="mt-6 w-full" onClick={handleSave}>
+              Save Prescription
+            </Button>
           </TabsContent>
 
+          {/* Medicines */}
           <TabsContent value="medicines">
-            <label className="block mt-2 font-medium text-left p-2">
-              Medicine Name
-            </label>
+            <label className="block mt-2 text-left">Medicine Name</label>
             <Input
               placeholder="Medicine Name"
               value={medForm.name}
               onChange={(e) => setMedForm({ ...medForm, name: e.target.value })}
             />
 
-            <label className="block mt-4 font-medium text-left p-2">Dose</label>
+            <label className="block mt-4 text-left">Dose</label>
             <Select
               onValueChange={(val) => setMedForm({ ...medForm, dose: val })}
             >
-              <SelectTrigger className="mt-2">
+              <SelectTrigger>
                 <SelectValue placeholder="Select Dose" />
               </SelectTrigger>
               <SelectContent>
@@ -176,10 +173,8 @@ export function PrescriptionForm({ visitId }: PrescriptionFormProps) {
               </SelectContent>
             </Select>
 
-            <label className="block mt-4 font-medium text-left p-2">
-              Frequency
-            </label>
-            <div className="flex justify-around mt-2">
+            <label className="block mt-4 text-left">Frequency</label>
+            <div className="flex gap-4 mt-2">
               {["Morning", "Afternoon", "Evening", "Night"].map((time) => (
                 <label key={time} className="flex items-center gap-2">
                   <Checkbox
@@ -194,7 +189,7 @@ export function PrescriptionForm({ visitId }: PrescriptionFormProps) {
                         setMedForm({
                           ...medForm,
                           frequency: medForm.frequency.filter(
-                            (f) => f !== time
+                            (f) => f !== time,
                           ),
                         });
                     }}
@@ -211,37 +206,12 @@ export function PrescriptionForm({ visitId }: PrescriptionFormProps) {
         </Tabs>
       </div>
 
-      {/* Right Side: PDF Preview */}
-      <div className="w-1/2 bg-gray-50 flex flex-col items-center p-4">
-        <div className="flex gap-2 mb-2">
-          <Button onClick={() => setZoom((z) => z + 0.1)}>Zoom In</Button>
-          <Button onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}>
-            Zoom Out
-          </Button>
-          <Button onClick={generatePDF}>Generate PDF</Button>
-        </div>
-
-        <div
-          className="bg-white border rounded w-[210mm] h-[297mm] overflow-auto scale-[var(--zoom)]"
-          style={{
-            transform: `scale(${zoom})`,
-            transformOrigin: "top left",
-          }}
-        >
-          <div className="p-6 text-sm">
-            <h2 className="text-lg font-semibold mb-2">Prescription Preview</h2>
-            <p>Visit ID: {visitId}</p>
-            <hr className="my-2" />
-            <h3>Patient: {patient.name}</h3>
-            <p>Age: {patient.age}</p>
-            <ul className="list-disc ml-4 mt-2">
-              {toBullets(patient.medicalHistory).map((line, i) => (
-                <li key={i}>{line}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
+      {/* Right Side: Preview Component */}
+      <PrescriptionPreview
+        visitId={visitId}
+        prescriptionData={prescriptionData}
+        medicines={medicines}
+      />
     </div>
   );
 }

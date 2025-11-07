@@ -55,12 +55,12 @@ export default function PrescriptionPage() {
       </div>
     );
 
-  if (!selectedPrescription)
-    return <div className="p-6 text-center">No prescription found</div>;
+  // if (!selectedPrescription)
+  //   return <div className="p-6 text-center">No prescription found</div>;
 
   return (
     <PrescriptionForm
-      visitId={selectedPrescription.id!}
+      visitId={selectedPrescription?.id! }
       existingPrescription={selectedPrescription}
     />
   );

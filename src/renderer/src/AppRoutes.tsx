@@ -2,7 +2,7 @@ import {Route, Routes} from "react-router-dom"
 // import AppointmentsPage from "./pages/AppointmentsPage"
 import AppointmentPage from "@/features/appointments/AppointmentPage"
 import AnalyticsPage from "./pages/AnalyticsPage"
-import PrescriptionPage from "./pages/PrescriptionPage"
+// import PrescriptionPage from "./pages/PrescriptionPage"
 import RolesAndAccessPage from "./pages/RolesAndAccessPage"
 import PatientsPage from "./pages/PatientsPage"
 import FormSettingsPage from "./pages/FormSettingsPage"
@@ -10,6 +10,7 @@ import MessagesPage from "./pages/MessagesPage"
 import HomePage from "./pages/HomePage"
 import LoginPage from "./pages/LoginPage"
 import MedicineInventoryPage from "./features/medicineInventory/MedicineInventoryPage"
+import PrescriptionPage from "./features/fullPrescription/prescription/PrescriptionPage"
 
 const AppRoutes = () => {
   return (

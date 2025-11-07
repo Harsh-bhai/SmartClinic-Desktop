@@ -3,8 +3,7 @@ import { appointments, patients } from "../drizzle/schema.js";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { getLocalDateString, getLocalDateTimeString } from "../utils/date.js";
 
-//FIXME - arrived/completed is not persisting after refresh, completed appointmets removed after refresh, there is an anomaly on queue no. also(check it out first)
-// need problem almost fixed, although queue number is not in sync after refresh, also see chatgpt latest response
+//FIXME - form texts are not visible on react-pdf viewer which i recently added, check chatgpt for the error i have send there
 
 // 🧩 Create new appointment
 export async function createAppointment(data) {

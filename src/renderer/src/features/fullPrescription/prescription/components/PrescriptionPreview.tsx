@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import React, { useState, useRef, useEffect } from "react";
+import { PDFViewer } from "@react-pdf/renderer";
+import { PrescriptionPDFDocument } from "./PrescriptionPDFDocument";
+import { useTheme } from "@/components/provider/ThemeProvider"; // ✅ from your ShadCN provider
 
 interface PrescriptionPreviewProps {
   visitId: string;
@@ -25,84 +25,96 @@ export function PrescriptionPreview({
   prescriptionData,
   medicines,
 }: PrescriptionPreviewProps) {
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.9);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
 
-  const generatePDF = () => {
-    const doc = new jsPDF();
-    doc.setFont("helvetica");
-    doc.text("Dr. Smile Dental Clinic", 14, 20);
-    doc.text(`Visit ID: ${visitId}`, 14, 28);
-    doc.text("Prescription Details:", 14, 40);
-    doc.text(`Reason: ${prescriptionData.reason}`, 14, 48);
-    doc.text(`Findings: ${prescriptionData.examinationFindings}`, 14, 56);
-    doc.text(`Advice: ${prescriptionData.advice}`, 14, 64);
+  // 🖱 Zoom with Ctrl + Scroll
+  useEffect(() => {
+    console.log("prescriptiondata", prescriptionData);
+    const container = containerRef.current;
+    if (!container) return;
 
-    if (medicines.length > 0) {
-      autoTable(doc, {
-        startY: 80,
-        head: [["Medicine", "Dose", "Frequency", "Duration", "Remarks"]],
-        body: medicines.map((m) => [
-          m.name,
-          m.dose,
-          m.frequency.join(", "),
-          m.duration,
-          m.remarks,
-        ]),
-        theme: "grid",
-      });
-    }
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        setZoom((prev) => {
+          const delta = e.deltaY > 0 ? -0.1 : 0.1;
+          return Math.min(Math.max(prev + delta, 0.4), 1.8);
+        });
+      }
+    };
 
-    doc.save(`prescription_${visitId}.pdf`);
-  };
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleWheel);
+  }, []);
+
+  const isDark = theme === "dark";
 
   return (
-    <div className="w-1/2 bg-gray-50 flex flex-col items-center p-4">
-      <div className="flex gap-2 mb-3">
-        <Button onClick={() => setZoom((z) => z + 0.1)}>Zoom In</Button>
-        <Button onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}>
-          Zoom Out
-        </Button>
-        <Button onClick={generatePDF}>Generate PDF</Button>
-      </div>
-
-      <div
-        className="bg-white border rounded w-[210mm] h-[297mm] overflow-auto p-6"
-        style={{
-          transform: `scale(${zoom})`,
-          transformOrigin: "top left",
-        }}
-      >
-        <h2 className="text-lg font-semibold mb-2">
-          Prescription Preview (Visit ID: {visitId})
+    <div
+      ref={containerRef}
+      className={`w-1/2 flex flex-col items-center p-4 overflow-hidden transition-colors duration-300 ${
+        isDark ? "bg-neutral-900" : "bg-gray-100"
+      }`}
+    >
+      {/* Header */}
+      <div className="flex justify-between w-full mb-3 items-center">
+        <h2
+          className={`font-semibold text-lg ml-2 ${
+            isDark ? "text-gray-100" : "text-gray-800"
+          }`}
+        >
+          Live PDF Preview
         </h2>
-        <hr className="my-2" />
-        <p>
-          <strong>Reason:</strong> {prescriptionData.reason}
-        </p>
-        <p>
-          <strong>Findings:</strong> {prescriptionData.examinationFindings}
-        </p>
-        <p>
-          <strong>Advice:</strong> {prescriptionData.advice}
-        </p>
-        <p>
-          <strong>Next Visit:</strong> {prescriptionData.nextVisit}
-        </p>
-
-        {medicines.length > 0 && (
-          <>
-            <h3 className="mt-4 font-semibold">Medicines</h3>
-            <ul className="list-disc ml-5">
-              {medicines.map((m, i) => (
-                <li key={i}>
-                  {m.name} - {m.dose} ({m.frequency.join(", ")}) for{" "}
-                  {m.duration} days
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
       </div>
+
+      {/* PDF Viewer */}
+      <div
+        className={`flex justify-center items-center flex-1 w-full overflow-auto rounded-lg ${
+          isDark ? "bg-neutral-800" : "bg-gray-200"
+        }`}
+      >
+        <div
+          style={{
+            transform: `scale(${zoom})`,
+            transformOrigin: "top center",
+            transition: "transform 0.15s ease",
+            width: "210mm",
+            height: "297mm",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <PDFViewer
+            style={{
+              width: "210mm",
+              height: "297mm",
+              border: isDark ? "1px solid #444" : "1px solid #ccc",
+              borderRadius: "8px",
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
+              color: isDark ? "#f0f0f0" : "#000000",
+            }}
+            showToolbar={false}
+          >
+            <PrescriptionPDFDocument
+              visitId={visitId}
+              prescriptionData={prescriptionData}
+              medicines={medicines}
+              isDarkMode={isDark}
+            />
+          </PDFViewer>
+        </div>
+      </div>
+
+      <p
+        className={`text-xs mt-2 ${
+          isDark ? "text-gray-400" : "text-gray-500"
+        }`}
+      >
+        Hold <kbd>Ctrl</kbd> + scroll to zoom
+      </p>
     </div>
   );
 }

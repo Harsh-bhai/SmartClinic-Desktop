@@ -10,29 +10,26 @@ import { PrescriptionForm } from "./components/PrescriptionForm";
 import { Loader2 } from "lucide-react";
 
 export default function PrescriptionPage() {
-  const { visitId } = useParams();
+  const { prescriptionId } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   const { selectedPrescription, loading } = useAppSelector(
-    (state) => state.prescription,
+    (state) => state.prescription
   );
 
   useEffect(() => {
     const initPrescription = async () => {
-      if (visitId) {
-        // ✅ Fetch existing prescription by ID
-        dispatch(fetchPrescriptionById(visitId));
+      if (prescriptionId) {
+        dispatch(fetchPrescriptionById(prescriptionId));
       } else {
-        // 🆕 Create a new prescription for a new patient visit
         const result = await dispatch(
           createPrescription({
             reason: "Routine Checkup",
             examinationFindings: "",
             advice: "",
-          }),
+          })
         );
-
         if (createPrescription.fulfilled.match(result)) {
           navigate(`/prescription/${result.payload.id}`);
         }
@@ -41,11 +38,10 @@ export default function PrescriptionPage() {
 
     initPrescription();
 
-    // Cleanup on unmount
     return () => {
       dispatch(setSelectedPrescription(null));
     };
-  }, [visitId, dispatch, navigate]);
+  }, [prescriptionId, dispatch, navigate]);
 
   if (loading)
     return (
@@ -55,12 +51,9 @@ export default function PrescriptionPage() {
       </div>
     );
 
-  // if (!selectedPrescription)
-  //   return <div className="p-6 text-center">No prescription found</div>;
-
   return (
     <PrescriptionForm
-      visitId={selectedPrescription?.id! }
+      prescriptionId={selectedPrescription?.id!}
       existingPrescription={selectedPrescription}
     />
   );

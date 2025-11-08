@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   markArrivedToggle,
-  markCompleted,
   deleteAppointment,
   deleteAppointmentsByBulk,
   setSelectedAppointment,
@@ -40,6 +39,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ExtendedAppointment } from "@/features/appointments/appointmentSlice";
 import { UpdateAppointmentDialog } from "./UpdateAppointmentDialog";
+import { Link } from "react-router-dom";
 
 interface AppointmentTableProps {
   newAppointments?: ExtendedAppointment[];
@@ -79,9 +79,8 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
     setDialogOpen(true);
   };
 
-  const handlePrescription = (id: string) => {
-    console.log("Open prescription mode for:", id);
-    // TODO: navigate to prescription mode later
+  const handlePrescription = (appointment: ExtendedAppointment) => {
+    dispatch(setSelectedAppointment(appointment));
   };
 
   const handleBulkDelete = () => {
@@ -131,14 +130,16 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
       <TableCell>
         <div className="flex items-center gap-2">
           {/* Send (Prescription Mode) */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handlePrescription(appointment.id!)}
-            title="Open in prescription mode"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+          <Link to={`/prescription`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handlePrescription(appointment)}
+              title="Open in prescription mode"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </Link>
 
           {/* Dropdown Menu */}
           <DropdownMenu>

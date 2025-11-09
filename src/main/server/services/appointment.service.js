@@ -3,16 +3,17 @@ import { appointments, patients } from "../drizzle/schema.js";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { getLocalDateString, getLocalDateTimeString } from "../utils/date.js";
 
-//FIXME - form texts are not visible on react-pdf viewer which i recently added, check chatgpt for the error i have send there
-
-// 🧩 Create new appointment
+/* -------------------------------------------------------
+ 🩺 CREATE APPOINTMENT
+------------------------------------------------------- */
 export async function createAppointment(data) {
   data.createdAt = getLocalDateTimeString();
   data.updatedAt = getLocalDateTimeString();
 
+  // Create appointment
   const result = await db.insert(appointments).values(data).returning();
 
-  // Return single flat object
+  // Return with patient details if available
   return {
     ...result[0],
     name: data.name,
@@ -20,10 +21,15 @@ export async function createAppointment(data) {
     gender: data.gender,
     phone: data.phone,
     address: data.address,
+    medicalHistory: data.medicalHistory,
+    lifestyleHabits: data.lifestyleHabits,
+    drugAllergies: data.drugAllergies,
   };
 }
 
-// 🧩 Create appointments in bulk
+/* -------------------------------------------------------
+ 📦 BULK CREATE APPOINTMENTS
+------------------------------------------------------- */
 export async function createAppointmentByBulk(dataArray) {
   const created = [];
 
@@ -40,27 +46,38 @@ export async function createAppointmentByBulk(dataArray) {
       gender: data.gender,
       phone: data.phone,
       address: data.address,
+      medicalHistory: data.medicalHistory,
+      lifestyleHabits: data.lifestyleHabits,
+      drugAllergies: data.drugAllergies,
     });
   }
 
   return created;
 }
 
-// 📋 Get all appointments
+/* -------------------------------------------------------
+ 📋 GET ALL APPOINTMENTS
+------------------------------------------------------- */
 export async function getAllAppointments() {
   const results = await db
     .select({
       id: appointments.id,
       treatmentStatus: appointments.treatmentStatus,
       paidStatus: appointments.paidStatus,
+      paid: appointments.paid,
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
+
+      // Include full patient info
       name: patients.name,
       age: patients.age,
       gender: patients.gender,
       phone: patients.phone,
       address: patients.address,
+      medicalHistory: patients.medicalHistory,
+      lifestyleHabits: patients.lifestyleHabits,
+      drugAllergies: patients.drugAllergies,
     })
     .from(appointments)
     .leftJoin(patients, eq(appointments.patientId, patients.id))
@@ -69,7 +86,9 @@ export async function getAllAppointments() {
   return results;
 }
 
-// 📅 Get today's appointments (purely local)
+/* -------------------------------------------------------
+ 📅 GET TODAY'S APPOINTMENTS
+------------------------------------------------------- */
 export async function getTodayAppointments() {
   const today = getLocalDateString();
   const start = `${today} 00:00:00`;
@@ -84,26 +103,28 @@ export async function getTodayAppointments() {
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
+
+      // Patient details
       name: patients.name,
       age: patients.age,
       gender: patients.gender,
       phone: patients.phone,
       address: patients.address,
+      medicalHistory: patients.medicalHistory,
+      lifestyleHabits: patients.lifestyleHabits,
+      drugAllergies: patients.drugAllergies,
     })
     .from(appointments)
     .leftJoin(patients, eq(appointments.patientId, patients.id))
-    .where(
-      and(
-        gte(appointments.createdAt, start),
-        lte(appointments.createdAt, end)
-      )
-    )
+    .where(and(gte(appointments.createdAt, start), lte(appointments.createdAt, end)))
     .orderBy(appointments.createdAt);
 
   return results;
 }
 
-// 🔍 Get appointment by ID
+/* -------------------------------------------------------
+ 🔍 GET APPOINTMENT BY ID
+------------------------------------------------------- */
 export async function getAppointmentById(id) {
   const result = await db
     .select({
@@ -114,11 +135,16 @@ export async function getAppointmentById(id) {
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
+
+      // Patient details
       name: patients.name,
       age: patients.age,
       gender: patients.gender,
       phone: patients.phone,
       address: patients.address,
+      medicalHistory: patients.medicalHistory,
+      lifestyleHabits: patients.lifestyleHabits,
+      drugAllergies: patients.drugAllergies,
     })
     .from(appointments)
     .leftJoin(patients, eq(appointments.patientId, patients.id))
@@ -127,7 +153,9 @@ export async function getAppointmentById(id) {
   return result[0];
 }
 
-// 🔍 Get appointments by patient ID
+/* -------------------------------------------------------
+ 🔍 GET APPOINTMENTS BY PATIENT ID
+------------------------------------------------------- */
 export async function getAppointmentsByPatientId(patientId) {
   const results = await db
     .select({
@@ -138,11 +166,16 @@ export async function getAppointmentsByPatientId(patientId) {
       createdAt: appointments.createdAt,
       updatedAt: appointments.updatedAt,
       patientId: appointments.patientId,
+
+      // Patient details
       name: patients.name,
       age: patients.age,
       gender: patients.gender,
       phone: patients.phone,
       address: patients.address,
+      medicalHistory: patients.medicalHistory,
+      lifestyleHabits: patients.lifestyleHabits,
+      drugAllergies: patients.drugAllergies,
     })
     .from(appointments)
     .leftJoin(patients, eq(appointments.patientId, patients.id))
@@ -152,10 +185,13 @@ export async function getAppointmentsByPatientId(patientId) {
   return results;
 }
 
-// ✅ Update appointment by ID
+/* -------------------------------------------------------
+ ✏️ UPDATE APPOINTMENT
+------------------------------------------------------- */
 export async function updateAppointment(id, data) {
   data.updatedAt = getLocalDateTimeString();
 
+  // Patient fields
   const patient = {
     id: data.patientId,
     name: data.name,
@@ -163,8 +199,12 @@ export async function updateAppointment(id, data) {
     gender: data.gender,
     phone: data.phone,
     address: data.address,
+    medicalHistory: data.medicalHistory,
+    lifestyleHabits: data.lifestyleHabits,
+    drugAllergies: data.drugAllergies,
   };
 
+  // Appointment fields
   const appointment = {
     id: data.id,
     patientId: data.patientId,
@@ -173,11 +213,13 @@ export async function updateAppointment(id, data) {
     paid: data.paid,
   };
 
+  // Update appointment
   await db
     .update(appointments)
     .set({ ...appointment, updatedAt: getLocalDateTimeString() })
     .where(eq(appointments.id, id));
 
+  // Update patient info
   await db
     .update(patients)
     .set({ ...patient, updatedAt: getLocalDateTimeString() })
@@ -186,17 +228,17 @@ export async function updateAppointment(id, data) {
   return getAppointmentById(id);
 }
 
-// 🗑️ Delete appointment by ID
+/* -------------------------------------------------------
+ 🗑️ DELETE SINGLE APPOINTMENT
+------------------------------------------------------- */
 export async function deleteAppointment(id) {
-  const result = await db
-    .delete(appointments)
-    .where(eq(appointments.id, id))
-    .returning();
-
+  const result = await db.delete(appointments).where(eq(appointments.id, id)).returning();
   return result[0];
 }
 
-// 🧹 Bulk delete
+/* -------------------------------------------------------
+ 🧹 BULK DELETE
+------------------------------------------------------- */
 export async function deleteAppointmentsByBulk(ids) {
   for (const id of ids) {
     await db.delete(appointments).where(eq(appointments.id, id));

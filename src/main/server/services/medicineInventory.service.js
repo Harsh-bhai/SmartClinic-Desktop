@@ -1,17 +1,17 @@
 import { db } from "../utils/drizzle.js";
 import { medicineInventory } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import { v4 as uuidv4 } from "uuid";
+import { randomAlphaNumId } from "../utils/id.js";
 
 export async function createMedicine(data) {
-  data.id = uuidv4();
+  data.id = randomAlphaNumId();
   const result = await db.insert(medicineInventory).values(data).returning();
   return result[0];
 }
 
 export async function createMedicinesByBulk(dataArray) {
   dataArray.forEach(async (data) => {
-    data.id = uuidv4();
+    data.id = randomAlphaNumId();
     await db.insert(medicineInventory).values(data).returning();
   });
   return { success: true, message: "Medicines created successfully" };

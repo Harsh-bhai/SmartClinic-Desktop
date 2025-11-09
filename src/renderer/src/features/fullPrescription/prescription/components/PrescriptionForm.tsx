@@ -19,7 +19,9 @@ export function PrescriptionForm({
     reason: "",
     examinationFindings: "",
   });
-  const selectedAppointment = useAppSelector((state) => state.appointments.selectedAppointment);
+  const selectedAppointment = useAppSelector(
+    (state) => state.appointments.selectedAppointment,
+  );
 
   useEffect(() => {
     if (existingPrescription) {
@@ -109,6 +111,7 @@ export function PrescriptionForm({
       <PrescriptionPreview
         prescriptionId={prescriptionId}
         prescriptionData={prescriptionData}
+        visibleSection={activeTab === "details" ? "prescription" : "medicines"}
       />
     </div>
   );

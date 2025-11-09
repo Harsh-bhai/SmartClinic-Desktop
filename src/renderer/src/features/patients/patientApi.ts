@@ -11,6 +11,9 @@ export interface Patient {
   gender: string;
   phone?: string;
   address?: string;
+  medicalHistory?: string;
+  lifestyleHabits?: string;
+  drugAllergies?: string;
   createdAt?: string;
   updatedAt?: string;
 }

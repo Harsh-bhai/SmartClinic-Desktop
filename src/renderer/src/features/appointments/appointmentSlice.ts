@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import { v4 as uuidv4 } from "uuid";
 import {getLocalDateString} from "./utils/date"
 import {
   Appointment,
@@ -12,6 +11,7 @@ import {
   deleteAppointmentsByBulkApi,
 } from "./appointmentApi";
 import { createPatientApi, getAllPatientsApi, Patient } from "../patients";
+import { randomAlphaNumId } from "@renderer/lib/id";
 
 // --------------------------------------------------
 // TYPES
@@ -89,7 +89,7 @@ export const fetchExistingPatients = createAsyncThunk(
 export const createAppointment = createAsyncThunk(
   "appointments/create",
   async (data: Appointment, { rejectWithValue }) => {
-    data.id = uuidv4();
+    data.id = randomAlphaNumId();
     try {
       const res = await createAppointmentApi(data);
       return res;
@@ -103,7 +103,7 @@ export const createAppointment = createAsyncThunk(
 export const createAppointmentForNewPatient = createAsyncThunk(
   "appointments/createForNewPatient",
   async (data: Appointment, { rejectWithValue }) => {
-    data.id = uuidv4();
+    data.id = randomAlphaNumId();
     try {
       const patientData: Patient = {
         name: data.name!,
@@ -349,7 +349,7 @@ const appointmentSlice = createSlice({
           existingQueues.length > 0 ? Math.max(...existingQueues) : 0;
 
         const metaInfo: AppointmentMeta = {
-          id: appt.id ?? uuidv4(),
+          id: appt.id ?? randomAlphaNumId(),
           arrived: false,
           queueNumber: maxQueue + 1,
         };
@@ -398,7 +398,7 @@ const appointmentSlice = createSlice({
           existingQueues.length > 0 ? Math.max(...existingQueues) : 0;
 
         const metaInfo: AppointmentMeta = {
-          id: appt.id ?? uuidv4(),
+          id: appt.id ?? randomAlphaNumId(),
           arrived: false,
           queueNumber: maxQueue + 1,
         };

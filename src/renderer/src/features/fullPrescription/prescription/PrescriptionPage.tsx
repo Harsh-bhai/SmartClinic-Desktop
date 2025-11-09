@@ -9,6 +9,8 @@ import {
 import { PrescriptionForm } from "./components/PrescriptionForm";
 import { Loader2 } from "lucide-react";
 
+//FIXME - schema changed, vitals and examination findings added. Fix all the things related to it and then go for prescripiton preview part
+
 export default function PrescriptionPage() {
   const { prescriptionId } = useParams();
   const navigate = useNavigate();

@@ -2,14 +2,30 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:3000/api/prescription"; // adjust if needed
 
-export interface Prescription{
+export interface Prescription {
   id?: string;
   patientId?: string;
+  appointmentId?: string;
   reason: string;
-  examinationFindings: string;
+  symptoms: string;
+  notes: string;
+  vitals: {
+    temperature?: string;
+    pulseRate?: string;
+    oxygenSaturation?: string;
+    bloodPressure?: string;
+  };
+  examinationFindings: {
+    general?: string;
+    cvs?: string;
+    rs?: string;
+    pa?: string;
+    cns?: string;
+  };
   advice: string;
-  nextVisit?: string;
+  nextVisit: string;
 }
+
 
 // 💊 Create a prescribed medicine
 export const createPrescriptionApi = async (data: Prescription) => {

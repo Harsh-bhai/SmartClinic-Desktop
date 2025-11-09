@@ -1,11 +1,11 @@
 import { db } from "../utils/drizzle.js";
 import { prescribedMedicines } from "../drizzle/schema.js";
 import { eq, and } from "drizzle-orm";
-import { v4 as uuidv4 } from "uuid";
+import { randomAlphaNumId } from "../utils/id.js";
 
 // ✅ 1. Create prescribed medicine for a prescription
 export async function createPrescribedMedicine(data) {
-  const id = uuidv4();
+  const id = randomAlphaNumId();
 
   const row = {
     id,

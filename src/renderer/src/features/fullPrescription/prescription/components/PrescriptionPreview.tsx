@@ -10,18 +10,36 @@ interface PrescriptionPreviewProps {
     reason: string;
     examinationFindings: string;
   };
+  visibleSection?: "doctor" | "prescription" | "medicines";
 }
 
 export function PrescriptionPreview({
   prescriptionId,
   prescriptionData,
+  visibleSection = "prescription",
 }: PrescriptionPreviewProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   const pageRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(1);
-  const selectedAppointment = useAppSelector((state) => state.appointments.selectedAppointment);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [zoom, setZoom] = useState(0.9);
+  const [autoScale, setAutoScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+
+  const [doctorSettings, setDoctorSettings] = useState<any>({});
+  const selectedAppointment = useAppSelector(
+    (state) => state.appointments.selectedAppointment,
+  );
+
+  // Load doctor settings
+  useEffect(() => {
+    const saved = localStorage.getItem("doctor_settings");
+    if (saved) setDoctorSettings(JSON.parse(saved));
+  }, []);
 
   // Ctrl + scroll zoom
   useEffect(() => {
@@ -37,25 +55,79 @@ export function PrescriptionPreview({
     return () => window.removeEventListener("wheel", handleWheel);
   }, []);
 
+  // Mouse drag navigation
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+      setStartPos({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+    };
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      setOffset({
+        x: e.clientX - startPos.x,
+        y: e.clientY - startPos.y,
+      });
+    };
+    const handleMouseUp = () => setIsDragging(false);
+
+    container.addEventListener("mousedown", handleMouseDown);
+    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mouseup", handleMouseUp);
+    container.addEventListener("mouseleave", handleMouseUp);
+
+    return () => {
+      container.removeEventListener("mousedown", handleMouseDown);
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("mouseup", handleMouseUp);
+      container.removeEventListener("mouseleave", handleMouseUp);
+    };
+  }, [isDragging, startPos, offset]);
+
+  const resetView = () => {
+    setZoom(0.9);
+    setOffset({ x: 0, y: 0 });
+  };
+
+  // Download full PDF
   const handleDownload = () => {
     if (!pageRef.current) return;
-
     const opt = {
       margin: 0,
       filename: `Prescription_${prescriptionId}.pdf`,
       html2canvas: { scale: 2 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const },
     };
-
     html2pdf().set(opt).from(pageRef.current).save();
   };
 
+  // Auto-resize when sidebar toggles
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      if (!containerRef.current) return;
+      const containerWidth = containerRef.current.offsetWidth;
+      const A4_WIDTH_PX = 794; // 210mm ~ 794px
+      const scale = containerWidth / A4_WIDTH_PX;
+      setAutoScale(Math.min(scale, 1));
+    });
+
+    if (containerRef.current) resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  const effectiveScale = zoom * autoScale;
+
   return (
     <div
-      className={`w-1/2 flex flex-col items-center p-4 overflow-hidden transition-colors ${
+      className={`flex flex-col items-center p-4 overflow-hidden transition-colors duration-300 ${
         isDark ? "bg-neutral-900" : "bg-gray-100"
       }`}
+      style={{ flex: "1 1 50%" }}
     >
+      {/* Controls */}
       <div className="flex justify-between w-full mb-3 items-center">
         <h2
           className={`font-semibold text-lg ${
@@ -64,64 +136,180 @@ export function PrescriptionPreview({
         >
           Live Prescription Preview
         </h2>
-        <Button variant="secondary" onClick={handleDownload}>
-          Download PDF
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={handleDownload}>
+            Download PDF
+          </Button>
+          <Button variant="outline" onClick={resetView}>
+            Reset View
+          </Button>
+        </div>
       </div>
 
+      {/* Container */}
       <div
-        className={`flex justify-center items-center flex-1 w-full overflow-auto rounded-lg ${
-          isDark ? "bg-neutral-800" : "bg-gray-200"
-        }`}
+        ref={containerRef}
+        className={`relative flex justify-center items-center flex-1 overflow-hidden rounded-lg cursor-${
+          isDragging ? "grabbing" : "grab"
+        } ${isDark ? "bg-neutral-800" : "bg-gray-200"}`}
+        style={{ userSelect: "none" }}
       >
+        {/* Scaled & draggable content */}
         <div
-          ref={pageRef}
           style={{
-            transform: `scale(${zoom})`,
+            transform: `translate(${offset.x}px, ${offset.y}px) scale(${effectiveScale})`,
             transformOrigin: "top center",
-            transition: "transform 0.15s ease",
+            transition: isDragging
+              ? "none"
+              : "transform 0.25s ease, scale 0.25s ease",
             width: "210mm",
             height: "297mm",
-            padding: "20mm",
             border: isDark ? "1px solid #444" : "1px solid #ccc",
             borderRadius: "8px",
             backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-            backgroundImage: "url('/prescription_template.png')",
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat",
-            color: isDark ? "#f0f0f0" : "#000",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+            overflow: "hidden",
           }}
+          ref={pageRef}
         >
-          <div style={{ textAlign: "center", marginBottom: "10mm" }}>
-            <h1 style={{ fontSize: "18pt", fontWeight: "bold" }}>
-              Dr. Smile Dental Clinic
-            </h1>
-            <p>123 Main Street, Raipur</p>
-            <p>Phone: +91 9876543210</p>
-            <p>Prescription ID: {prescriptionId}</p>
-          </div>
+          {/* ✅ Visible content (your HTML) */}
+          <div
+            style={{
+              padding: "20mm",
+              width: "100%",
+              height: "100%",
+              backgroundImage: "url('/prescription_template.png')",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+              color: isDark ? "#f0f0f0" : "#000",
+              textAlign: "left",
+            }}
+          >
+            {/* Beautified Doctor Info */}
+            <div
+              style={{
+                height: "15%",
+                borderBottom: "1px solid #ccc",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                paddingBottom: "4mm",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                {/* Left Side */}
+                <div>
+                  <h1
+                    style={{
+                      fontSize: "16pt",
+                      fontWeight: "bold",
+                      color: "blue",
+                    }}
+                  >
+                    {doctorSettings.doctorName || "Dr. John Doe"}
+                  </h1>
+                  <p>{doctorSettings.qualification || "BDS, MDS (Dentist)"}</p>
+                  <p style={{ color: "grey" }}>
+                    Reg. No:{" "}
+                    <strong>{doctorSettings.registrationNo || "—"}</strong>
+                  </p>
+                  <p>Timings: {doctorSettings.timings || "Mon–Sat 10AM–7PM"}</p>
+                </div>
 
-          <div style={{ marginBottom: "10mm", fontSize: "12pt" }}>
-            <strong>Patient ID:</strong> {selectedAppointment?.patientId || "—"}{" "}
-            <br />
-            <strong>Name:</strong> {selectedAppointment?.name || "—"} <br />
-            <strong>Age:</strong> {selectedAppointment?.age || "—"} &nbsp;
-            <strong>Gender:</strong> {selectedAppointment?.gender || "—"} <br />
-            <strong>Appointment ID:</strong>{" "}
-            {selectedAppointment?.id || "—"}
-          </div>
+                {/* Center: Logo */}
+                {doctorSettings.logo ? (
+                  <img
+                    src={doctorSettings.logo}
+                    alt="Clinic Logo"
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      objectFit: "contain",
+                      borderRadius: "8px",
+                      alignSelf: "center",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      background: "#ddd",
+                      borderRadius: "8px",
+                      alignSelf: "center",
+                    }}
+                  ></div>
+                )}
 
-          <div style={{ fontSize: "12pt" }}>
-            <h2 style={{ fontSize: "14pt", fontWeight: "bold" }}>
-              Prescription Details
-            </h2>
-            <p>
-              <strong>Reason:</strong> {prescriptionData.reason || "—"}
-            </p>
-            <p>
-              <strong>Examination Findings:</strong>{" "}
-              {prescriptionData.examinationFindings || "—"}
-            </p>
+                {/* Right Side */}
+                <div style={{ textAlign: "right" }}>
+                  <h2
+                    style={{
+                      fontSize: "16pt",
+                      fontWeight: "bold",
+                      color: "Red",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {doctorSettings.hospitalName || "Smile Dental Clinic"}
+                  </h2>
+                  <p style={{ color: "grey" }}>
+                    License: {doctorSettings.licenseNo || "—"}
+                  </p>
+                  <p>
+                    Phone: {doctorSettings.contactNumber || "+91 9876543210"}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "4px",
+                  fontSize: "12pt",
+                  color: isDark ? "#aaa" : "#333",
+                }}
+              >
+                {doctorSettings.address ||
+                  "123 Main Street, Raipur, Chhattisgarh"}
+              </div>
+            </div>
+
+            {/* Patient Info */}
+            <div style={{ marginTop: "6mm", fontSize: "12pt" }}>
+              <span style={{textAlign:"right"}}>{new Date().toLocaleString()}</span>
+              <div style={{display:"flex", gap: "4px", justifyContent: "space-between"}}>
+                <div >
+                  <strong>Patient ID:</strong>{" "}
+                  {selectedAppointment?.patientId || "—"}
+                </div>
+                <div>
+                  <strong>Appointment ID:</strong>{" "}
+                  {selectedAppointment?.id || "—"}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "4px" }}>
+                <strong>{selectedAppointment?.name || "—"},</strong>
+                <span>{selectedAppointment?.gender || "—"}</span>,
+                <span>{selectedAppointment?.age || "—"} years</span>,
+                <span>{selectedAppointment?.phone || "—"}</span>
+              </div>{" "}
+              <br />
+            </div>
+
+            {/* Prescription Details */}
+            <div style={{ marginTop: "8mm", fontSize: "12pt" }}>
+              <h2 style={{ fontSize: "14pt", fontWeight: "bold" }}>
+                Prescription Details
+              </h2>
+              <p>
+                <strong>Reason:</strong> {prescriptionData.reason || "—"}
+              </p>
+              <p>
+                <strong>Examination Findings:</strong>{" "}
+                {prescriptionData.examinationFindings || "—"}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -129,7 +317,8 @@ export function PrescriptionPreview({
       <p
         className={`text-xs mt-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}
       >
-        Hold <kbd>Ctrl</kbd> + scroll to zoom
+        Hold <kbd>Ctrl</kbd> + scroll to zoom, drag to move,{" "}
+        <strong>Reset</strong> to default.
       </p>
     </div>
   );

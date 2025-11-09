@@ -1,11 +1,11 @@
 import { db } from "../utils/drizzle.js";
 import { prescriptions } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
-import {uuidv4} from "crypto"
 import { getLocalDateTimeString } from "../utils/date.js";
+import { randomAlphaNumId } from "../utils/id.js";
 
 export async function createPrescription(data) {
-  const id = uuidv4();
+  const id = randomAlphaNumId();
   const row = {
     id,
     patientId: data.patientId,

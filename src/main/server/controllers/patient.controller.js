@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import * as patientService from "../services/patient.service.js";
 
 export async function createPatient(req, res) {

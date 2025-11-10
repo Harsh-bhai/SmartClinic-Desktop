@@ -8,8 +8,7 @@ import {
 } from "./prescriptionSlice";
 import { PrescriptionForm } from "./components/PrescriptionForm";
 import { Loader2 } from "lucide-react";
-
-//FIXME - schema changed, vitals and examination findings added. Fix all the things related to it and then go for prescripiton preview part
+import { Prescription } from "./prescriptionApi";
 
 export default function PrescriptionPage() {
   const { prescriptionId } = useParams();
@@ -25,13 +24,16 @@ export default function PrescriptionPage() {
       if (prescriptionId) {
         dispatch(fetchPrescriptionById(prescriptionId));
       } else {
-        const result = await dispatch(
-          createPrescription({
-            reason: "Routine Checkup",
-            examinationFindings: "",
-            advice: "",
-          })
-        );
+        const newPrescription: Prescription = {
+          reason: "",
+          symptoms: "",
+          notes: "",
+          vitals: {},
+          examinationFindings: {},
+          advice: "",
+          nextVisit: "",
+        };
+        const result = await dispatch(createPrescription(newPrescription));
         if (createPrescription.fulfilled.match(result)) {
           navigate(`/prescription/${result.payload.id}`);
         }
@@ -39,10 +41,7 @@ export default function PrescriptionPage() {
     };
 
     initPrescription();
-
-    return () => {
-      dispatch(setSelectedPrescription(null));
-    };
+    return () => {dispatch(setSelectedPrescription(null));}
   }, [prescriptionId, dispatch, navigate]);
 
   if (loading)

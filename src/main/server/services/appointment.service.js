@@ -21,9 +21,9 @@ export async function createAppointment(data) {
     gender: data.gender,
     phone: data.phone,
     address: data.address,
-    medicalHistory: data.medicalHistory,
-    lifestyleHabits: data.lifestyleHabits,
-    drugAllergies: data.drugAllergies,
+    medicalHistory: data?.medicalHistory ?? "",
+    lifestyleHabits: data?.lifestyleHabits ?? "",
+    drugAllergies: data?.drugAllergies ?? "",
   };
 }
 
@@ -46,9 +46,9 @@ export async function createAppointmentByBulk(dataArray) {
       gender: data.gender,
       phone: data.phone,
       address: data.address,
-      medicalHistory: data.medicalHistory,
-      lifestyleHabits: data.lifestyleHabits,
-      drugAllergies: data.drugAllergies,
+      medicalHistory: data?.medicalHistory ?? "",
+      lifestyleHabits: data?.lifestyleHabits ?? "",
+      drugAllergies: data?.drugAllergies ?? "",
     });
   }
 
@@ -199,9 +199,9 @@ export async function updateAppointment(id, data) {
     gender: data.gender,
     phone: data.phone,
     address: data.address,
-    medicalHistory: data.medicalHistory,
-    lifestyleHabits: data.lifestyleHabits,
-    drugAllergies: data.drugAllergies,
+    medicalHistory: data?.medicalHistory ?? "",
+    lifestyleHabits: data?.lifestyleHabits ?? "",
+    drugAllergies: data?.drugAllergies ?? "",
   };
 
   // Appointment fields

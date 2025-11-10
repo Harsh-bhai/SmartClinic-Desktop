@@ -3,13 +3,13 @@ import html2pdf from "html2pdf.js";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
+import { Prescription } from "../prescriptionApi";
+
+//FIXME - revert the changes of prescripton type and in schema also such as examination findigs instead find rich text component for examination findings and reason also and try to store that as text, ask chatgpt for possiblities
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;
-  prescriptionData: {
-    reason: string;
-    examinationFindings: string;
-  };
+  prescriptionData: Prescription
   visibleSection?: "doctor" | "prescription" | "medicines";
 }
 
@@ -211,7 +211,7 @@ export function PrescriptionPreview({
                   <p>{doctorSettings.qualification || "BDS, MDS (Dentist)"}</p>
                   <p style={{ color: "grey" }}>
                     Reg. No:{" "}
-                    <strong>{doctorSettings.registrationNo || "—"}</strong>
+                    <strong>{doctorSettings.registrationNo}</strong>
                   </p>
                   <p>Timings: {doctorSettings.timings || "Mon–Sat 10AM–7PM"}</p>
                 </div>
@@ -254,7 +254,7 @@ export function PrescriptionPreview({
                     {doctorSettings.hospitalName || "Smile Dental Clinic"}
                   </h2>
                   <p style={{ color: "grey" }}>
-                    License: {doctorSettings.licenseNo || "—"}
+                    License: {doctorSettings.licenseNo}
                   </p>
                   <p>
                     Phone: {doctorSettings.contactNumber || "+91 9876543210"}
@@ -281,18 +281,18 @@ export function PrescriptionPreview({
               <div style={{display:"flex", gap: "4px", justifyContent: "space-between"}}>
                 <div >
                   <strong>Patient ID:</strong>{" "}
-                  {selectedAppointment?.patientId || "—"}
+                  {selectedAppointment?.patientId}
                 </div>
                 <div>
                   <strong>Appointment ID:</strong>{" "}
-                  {selectedAppointment?.id || "—"}
+                  {selectedAppointment?.id}
                 </div>
               </div>
               <div style={{ display: "flex", gap: "4px" }}>
-                <strong>{selectedAppointment?.name || "—"},</strong>
-                <span>{selectedAppointment?.gender || "—"}</span>,
-                <span>{selectedAppointment?.age || "—"} years</span>,
-                <span>{selectedAppointment?.phone || "—"}</span>
+                <strong>{selectedAppointment?.name},</strong>
+                <span>{selectedAppointment?.gender}</span>,
+                <span>{selectedAppointment?.age} years</span>,
+                <span>{selectedAppointment?.phone}</span>
               </div>{" "}
               <br />
             </div>
@@ -303,11 +303,15 @@ export function PrescriptionPreview({
                 Prescription Details
               </h2>
               <p>
-                <strong>Reason:</strong> {prescriptionData.reason || "—"}
+                <strong>Reason:</strong> {prescriptionData.reason}
               </p>
               <p>
                 <strong>Examination Findings:</strong>{" "}
-                {prescriptionData.examinationFindings || "—"}
+                general: {prescriptionData.examinationFindings.general}
+                cns: {prescriptionData.examinationFindings.cns}
+                cvs: {prescriptionData.examinationFindings.cvs}
+                pa: {prescriptionData.examinationFindings.pa}
+                rs: {prescriptionData.examinationFindings.rs}
               </p>
             </div>
           </div>

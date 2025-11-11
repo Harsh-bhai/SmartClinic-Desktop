@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
 
-//FIXME - revert the changes of prescripton type and in schema also such as examination findigs instead find rich text component for examination findings and reason also and try to store that as text, ask chatgpt for possiblities
+//FIXME - rich text added, check chatgpt for response
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;
@@ -307,11 +307,7 @@ export function PrescriptionPreview({
               </p>
               <p>
                 <strong>Examination Findings:</strong>{" "}
-                general: {prescriptionData.examinationFindings.general}
-                cns: {prescriptionData.examinationFindings.cns}
-                cvs: {prescriptionData.examinationFindings.cvs}
-                pa: {prescriptionData.examinationFindings.pa}
-                rs: {prescriptionData.examinationFindings.rs}
+                {prescriptionData.examinationFindings}
               </p>
             </div>
           </div>

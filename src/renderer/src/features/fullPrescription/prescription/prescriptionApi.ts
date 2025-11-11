@@ -15,13 +15,7 @@ export interface Prescription {
     oxygenSaturation?: string;
     bloodPressure?: string;
   };
-  examinationFindings: {
-    general?: string;
-    cvs?: string;
-    rs?: string;
-    pa?: string;
-    cns?: string;
-  };
+  examinationFindings: string;
   advice: string;
   nextVisit: string;
 }

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PrescriptionPreview } from "./PrescriptionPreview";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 interface PrescriptionFormProps {
   prescriptionId: string;
@@ -22,13 +23,13 @@ export function PrescriptionForm({
     symptoms: "",
     notes: "",
     vitals: {},
-    examinationFindings: {},
+    examinationFindings: "",
     advice: "",
     nextVisit: "",
   });
 
   const selectedAppointment = useAppSelector(
-    (state) => state.appointments.selectedAppointment
+    (state) => state.appointments.selectedAppointment,
   );
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function PrescriptionForm({
       setPrescriptionData({
         ...existingPrescription,
         vitals: existingPrescription.vitals || {},
-        examinationFindings: existingPrescription.examinationFindings || {},
+        examinationFindings: existingPrescription.examinationFindings,
       });
     }
   }, [existingPrescription]);
@@ -46,9 +47,9 @@ export function PrescriptionForm({
   };
 
   const handleNestedChange = (
-    parent: "vitals" | "examinationFindings",
+    parent: "vitals",
     field: string,
-    value: string
+    value: string,
   ) => {
     setPrescriptionData((prev) => ({
       ...prev,
@@ -68,43 +69,38 @@ export function PrescriptionForm({
 
           <TabsContent value="details">
             {/* Patient Info */}
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <div>
-                <label className="block text-left">Patient Name</label>
-                <Input value={selectedAppointment?.name || ""} readOnly />
-              </div>
-              <div>
-                <label className="block text-left">Age</label>
-                <Input value={selectedAppointment?.age || ""} readOnly />
-              </div>
-              <div>
-                <label className="block text-left">Gender</label>
-                <Input value={selectedAppointment?.gender || ""} readOnly />
-              </div>
-              <div>
-                <label className="block text-left">Patient ID</label>
-                <Input value={selectedAppointment?.patientId || ""} readOnly />
-              </div>
-              <div>
-                <label className="block text-left">Appointment ID</label>
-                <Input value={selectedAppointment?.id || ""} readOnly />
-              </div>
-            </div>
+            <ul className="list-disc mt-4 text-left">
+              <li>
+                <span className="font-semibold">Patient Name:</span> {selectedAppointment?.name || ""}
+              </li>
+              <li>
+                <span className="font-semibold">Age:</span> {selectedAppointment?.age || ""}
+              </li>
+              <li>
+                <span className="font-semibold">Gender:</span> {selectedAppointment?.gender || ""}
+              </li>
+              <li>
+                <span className="font-semibold">Patient ID:</span> {selectedAppointment?.patientId || ""}
+              </li>
+              <li>
+                <span className="font-semibold">Appointment ID:</span> {selectedAppointment?.id || ""}
+              </li>
+            </ul>
 
             {/* Reason */}
             <label className="block mt-6 text-left">Reason</label>
-            <Textarea
-              placeholder="Enter reason for visit"
-              value={prescriptionData.reason}
-              onChange={(e) => handleChange("reason", e.target.value)}
+            <RichTextEditor
+              value={prescriptionData.reason || ""}
+              onChange={(val) => handleChange("reason", val)}
             />
 
-            {/* Symptoms */}
-            <label className="block mt-4 text-left">Symptoms</label>
-            <Textarea
-              placeholder="List symptoms (comma separated or notes)"
-              value={prescriptionData.symptoms}
-              onChange={(e) => handleChange("symptoms", e.target.value)}
+            {/* Examination Findings */}
+            <h3 className="font-semibold text-md mt-6 mb-2 text-left">
+              Examination Findings
+            </h3>
+            <RichTextEditor
+              value={prescriptionData.examinationFindings || ""}
+              onChange={(val) => handleChange("examinationFindings", val)}
             />
 
             {/* Notes */}
@@ -115,27 +111,6 @@ export function PrescriptionForm({
               onChange={(e) => handleChange("notes", e.target.value)}
             />
 
-            {/* Vitals */}
-            <h3 className="font-semibold text-md mt-6 mb-2 text-left">
-              Vitals
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              {["temperature", "pulseRate", "oxygenSaturation", "bloodPressure"].map(
-                (field) => (
-                  <div key={field}>
-                    <label className="block capitalize text-left">
-                      {field.replace(/([A-Z])/g, " $1")}
-                    </label>
-                    <Input
-                      value={(prescriptionData.vitals as any)[field] || ""}
-                      onChange={(e) =>
-                        handleNestedChange("vitals", field, e.target.value)
-                      }
-                    />
-                  </div>
-                )
-              )}
-            </div>
 
             {/* Examination Findings */}
             <h3 className="font-semibold text-md mt-6 mb-2 text-left">
@@ -146,9 +121,11 @@ export function PrescriptionForm({
                 <div key={field}>
                   <label className="block uppercase text-left">{field}</label>
                   <Input
-                    value={(prescriptionData.examinationFindings as any)[field] || ""}
+                    value={
+                      (prescriptionData.examinationFindings as any)[field] || ""
+                    }
                     onChange={(e) =>
-                      handleNestedChange("examinationFindings", field, e.target.value)
+                      handleChange("examinationFindings", e.target.value)
                     }
                   />
                 </div>

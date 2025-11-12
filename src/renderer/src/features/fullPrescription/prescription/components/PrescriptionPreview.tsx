@@ -5,11 +5,11 @@ import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
 
-//FIXME - rich text added, check chatgpt for response
+//FIXME - rich text componenet is wokring fine, add important forms fields in form as suggest by mama, beutify the color component, add some predfiend colors
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;
-  prescriptionData: Prescription
+  prescriptionData: Prescription;
   visibleSection?: "doctor" | "prescription" | "medicines";
 }
 
@@ -210,8 +210,7 @@ export function PrescriptionPreview({
                   </h1>
                   <p>{doctorSettings.qualification || "BDS, MDS (Dentist)"}</p>
                   <p style={{ color: "grey" }}>
-                    Reg. No:{" "}
-                    <strong>{doctorSettings.registrationNo}</strong>
+                    Reg. No: <strong>{doctorSettings.registrationNo}</strong>
                   </p>
                   <p>Timings: {doctorSettings.timings || "Mon–Sat 10AM–7PM"}</p>
                 </div>
@@ -277,15 +276,21 @@ export function PrescriptionPreview({
 
             {/* Patient Info */}
             <div style={{ marginTop: "6mm", fontSize: "12pt" }}>
-              <span style={{textAlign:"right"}}>{new Date().toLocaleString()}</span>
-              <div style={{display:"flex", gap: "4px", justifyContent: "space-between"}}>
-                <div >
-                  <strong>Patient ID:</strong>{" "}
-                  {selectedAppointment?.patientId}
+              <span style={{ textAlign: "right" }}>
+                {new Date().toLocaleString()}
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "4px",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <strong>Patient ID:</strong> {selectedAppointment?.patientId}
                 </div>
                 <div>
-                  <strong>Appointment ID:</strong>{" "}
-                  {selectedAppointment?.id}
+                  <strong>Appointment ID:</strong> {selectedAppointment?.id}
                 </div>
               </div>
               <div style={{ display: "flex", gap: "4px" }}>
@@ -302,13 +307,25 @@ export function PrescriptionPreview({
               <h2 style={{ fontSize: "14pt", fontWeight: "bold" }}>
                 Prescription Details
               </h2>
-              <p>
-                <strong>Reason:</strong> {prescriptionData.reason}
-              </p>
-              <p>
-                <strong>Examination Findings:</strong>{" "}
-                {prescriptionData.examinationFindings}
-              </p>
+              <div>
+                <strong>Reason:</strong>
+                <div
+                  className="mt-1 prose prose-sm dark:prose-invert text-sm [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1"
+                  dangerouslySetInnerHTML={{
+                    __html: prescriptionData.reason || "<p>—</p>",
+                  }}
+                />
+              </div>
+
+              <div className="mt-2">
+                <strong>Examination Findings:</strong>
+                <div
+                  className="mt-1 prose prose-sm dark:prose-invert text-sm [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1"
+                  dangerouslySetInnerHTML={{
+                    __html: prescriptionData.examinationFindings || "<p>—</p>",
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>

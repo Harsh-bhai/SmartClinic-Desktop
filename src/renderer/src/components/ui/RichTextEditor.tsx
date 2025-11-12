@@ -1,12 +1,19 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
-import {TextStyle} from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
-import { Bold, Italic, UnderlineIcon, List, ListOrdered, Palette } from "lucide-react";
+import {
+  Bold,
+  Italic,
+  UnderlineIcon,
+  List,
+  ListOrdered,
+  Palette,
+} from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +23,11 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
-export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+export function RichTextEditor({
+  value,
+  onChange,
+  placeholder,
+}: RichTextEditorProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const editor = useEditor({
@@ -36,7 +47,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     editorProps: {
       attributes: {
         class:
-          "min-h-[180px] w-full rounded-md border border-gray-300 dark:border-gray-700 p-3 text-sm focus:outline-none bg-white dark:bg-neutral-900 prose prose-sm max-w-none",
+          "min-h-[180px] w-full rounded-md border border-gray-300 dark:border-gray-700 p-3 text-sm focus:outline-none bg-white dark:bg-neutral-900 text-left",
       },
     },
   });
@@ -55,7 +66,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={cn(
             "p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700",
-            editor.isActive("bold") && "bg-gray-300 dark:bg-neutral-700"
+            editor.isActive("bold") && "bg-gray-300 dark:bg-neutral-700",
           )}
         >
           <Bold className="h-4 w-4" />
@@ -65,7 +76,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={cn(
             "p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700",
-            editor.isActive("italic") && "bg-gray-300 dark:bg-neutral-700"
+            editor.isActive("italic") && "bg-gray-300 dark:bg-neutral-700",
           )}
         >
           <Italic className="h-4 w-4" />
@@ -75,7 +86,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={cn(
             "p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700",
-            editor.isActive("underline") && "bg-gray-300 dark:bg-neutral-700"
+            editor.isActive("underline") && "bg-gray-300 dark:bg-neutral-700",
           )}
         >
           <UnderlineIcon className="h-4 w-4" />
@@ -85,7 +96,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={cn(
             "p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700",
-            editor.isActive("bulletList") && "bg-gray-300 dark:bg-neutral-700"
+            editor.isActive("bulletList") && "bg-gray-300 dark:bg-neutral-700",
           )}
         >
           <List className="h-4 w-4" />
@@ -95,7 +106,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={cn(
             "p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700",
-            editor.isActive("orderedList") && "bg-gray-300 dark:bg-neutral-700"
+            editor.isActive("orderedList") && "bg-gray-300 dark:bg-neutral-700",
           )}
         >
           <ListOrdered className="h-4 w-4" />

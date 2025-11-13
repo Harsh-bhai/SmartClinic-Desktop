@@ -5,7 +5,8 @@ import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
 
-//FIXME - rich text componenet is wokring fine, add important forms fields in form as suggest by mama, beutify the color component, add some predfiend colors
+//FIXME - rich text componenet is wokring fine, add important forms fields in form as suggest by mama, persist current patient/appointment data and prescription data, add more imp forms, msg mama
+// change white color to default text color, cuz white color camoflage with light mode
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;
@@ -276,9 +277,11 @@ export function PrescriptionPreview({
 
             {/* Patient Info */}
             <div style={{ marginTop: "6mm", fontSize: "12pt" }}>
-              <span style={{ textAlign: "right" }}>
-                {new Date().toLocaleString()}
-              </span>
+              <div className="flex justify-end">
+                <span  style={{ textAlign: "right" }}>
+                  {new Date().toLocaleString()}
+                </span>
+              </div>
               <div
                 style={{
                   display: "flex",

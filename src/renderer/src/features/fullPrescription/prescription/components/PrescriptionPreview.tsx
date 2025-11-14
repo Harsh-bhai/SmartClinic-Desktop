@@ -5,8 +5,7 @@ import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
 
-//FIXME - rich text componenet is wokring fine, add important forms fields in form as suggest by mama, persist current patient/appointment data and prescription data, add more imp forms, msg mama
-// change white color to default text color, cuz white color camoflage with light mode
+//FIXME - add important forms fields in form as suggest by mama, persist current patient/appointment data and prescription data, add more imp forms, save it in database, create prescriptionApi, prescriptionSlice msg mama, create medicines section
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;
@@ -277,23 +276,23 @@ export function PrescriptionPreview({
 
             {/* Patient Info */}
             <div style={{ marginTop: "6mm", fontSize: "12pt" }}>
-              <div className="flex justify-end">
-                <span  style={{ textAlign: "right" }}>
-                  {new Date().toLocaleString()}
-                </span>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>{new Date().toLocaleDateString()}</span>
+                <span>{new Date().toLocaleTimeString()}</span>
               </div>
               <div
                 style={{
                   display: "flex",
                   gap: "4px",
                   justifyContent: "space-between",
+                  fontSize: "12pt",
                 }}
               >
-                <div>
-                  <strong>Patient ID:</strong> {selectedAppointment?.patientId}
+                <div style={{fontSize:"0.85rem", color:"grey", fontStyle:"italic"}}>
+                  <span >PID:</span> {selectedAppointment?.patientId}
                 </div>
-                <div>
-                  <strong>Appointment ID:</strong> {selectedAppointment?.id}
+                <div style={{fontSize:"0.85rem", color:"slategray", fontStyle:"italic"}}>
+                  <span style={{fontSize:"0.75rem"}}>AID:</span> {selectedAppointment?.id}
                 </div>
               </div>
               <div style={{ display: "flex", gap: "4px" }}>
@@ -304,6 +303,7 @@ export function PrescriptionPreview({
               </div>{" "}
               <br />
             </div>
+            <hr />
 
             {/* Prescription Details */}
             <div style={{ marginTop: "8mm", fontSize: "12pt" }}>

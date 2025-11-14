@@ -29,7 +29,7 @@ export default function PrescriptionPage() {
           symptoms: "",
           notes: "",
           vitals: {},
-          examinationFindings: {},
+          examinationFindings: "",
           advice: "",
           nextVisit: "",
         };

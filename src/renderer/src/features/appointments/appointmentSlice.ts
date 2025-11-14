@@ -445,7 +445,7 @@ export const { markArrivedToggle, markCompleted, setSelectedAppointment } =
 const persistConfig = {
   key: "appointmentMeta",
   storage,
-  whitelist: ["meta", "lastQueueResetDate"],
+  whitelist: ["meta", "lastQueueResetDate", "selectedAppointment"],
 };
 
 export const appointmentReducer = persistReducer(

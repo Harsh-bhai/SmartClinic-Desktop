@@ -1,3 +1,4 @@
+import { Mark, mergeAttributes } from "@tiptap/core";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -20,6 +21,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useTheme } from "../provider/ThemeProvider";
 
 interface RichTextEditorProps {
   value: string;
@@ -35,6 +37,47 @@ export function RichTextEditor({
   const [showColorMenu, setShowColorMenu] = useState(false);
   const paletteButtonRef = useRef<HTMLButtonElement | null>(null);
   const [panelPosition, setPanelPosition] = useState({ left: 0 });
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
+  const FontSize = Mark.create({
+    name: "fontSize",
+
+    addAttributes() {
+      return {
+        fontSize: {
+          default: null,
+          parseHTML: (element) => element.style.fontSize || null,
+          renderHTML: (attributes) => {
+            if (!attributes.fontSize) return {};
+            return { style: `font-size: ${attributes.fontSize}` };
+          },
+        },
+      };
+    },
+
+    parseHTML() {
+      return [{ tag: "span[style]" }];
+    },
+
+    renderHTML({ HTMLAttributes }) {
+      return [
+        "span",
+        mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+        0,
+      ];
+    },
+
+    addCommands() {
+      return {
+        setFontSize:
+          (size) =>
+          ({ chain }) => {
+            return chain().setMark("fontSize", { fontSize: size }).run();
+          },
+      };
+    },
+  });
 
   const editor = useEditor({
     extensions: [
@@ -45,6 +88,7 @@ export function RichTextEditor({
       BulletList,
       OrderedList,
       ListItem,
+      FontSize,
     ],
     content: value || "",
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -52,6 +96,7 @@ export function RichTextEditor({
       attributes: {
         class:
           "min-h-[180px] w-full rounded-md border border-gray-300 dark:border-gray-700 p-3 text-sm focus:outline-none bg-white dark:bg-neutral-900 text-left",
+          spellcheck: "false",
       },
     },
   });
@@ -72,14 +117,12 @@ export function RichTextEditor({
 
   const changeFontSize = (increase: boolean) => {
     const currentSize = parseInt(
-      editor.getAttributes("textStyle").fontSize || "14",
+      editor.getAttributes("fontSize").fontSize || "14",
     );
+
     const newSize = increase ? currentSize + 1 : Math.max(10, currentSize - 1);
-    editor
-      .chain()
-      .focus()
-      .setMark("textStyle", { fontSize: `${newSize}px` })
-      .run();
+
+    editor.chain().focus().setFontSize(`${newSize}px`).run();
   };
 
   return (
@@ -163,16 +206,31 @@ export function RichTextEditor({
         {/* COLOR PANEL (blue box) */}
         {showColorMenu && (
           <div
-            className="rounded-md p-3 bg-gray-50 dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 shadow-md"
+            className="rounded-md bg-gray-50 dark:bg-neutral-800 border-4dark:border-neutral-700 shadow-md"
             style={{ left: panelPosition.left }}
           >
             <RadioGroup
               className="flex gap-2"
-              onValueChange={(value) => setColor(value)}
+              onValueChange={(value) => {
+                if (value === "default") {
+                  editor.chain().focus().unsetColor().run();
+                } else {
+                  setColor(value);
+                }
+              }}
             >
-              {/* Predefined Colors including white */}
+              {/* Default Text Color Swatch */}
+              <RadioGroupItem
+                value="default"
+                aria-label="Default text color"
+                className={`
+          size-6 rounded-full shadow-none border border-gray-400 
+          ${isDark ? "bg-white" : "bg-black"}
+        `}
+              />
+
+              {/* Predefined Colors */}
               {[
-                { name: "white", border: "border-gray-400", bg: "bg-white" },
                 { name: "red", border: "border-red-500", bg: "bg-red-500" },
                 {
                   name: "orange",
@@ -193,7 +251,7 @@ export function RichTextEditor({
               ].map((clr) => (
                 <RadioGroupItem
                   key={clr.name}
-                  value={clr.name === "white" ? "#ffffff" : clr.name}
+                  value={clr.name}
                   aria-label={clr.name}
                   className={`size-6 rounded-full shadow-none ${clr.bg} ${clr.border}`}
                 />

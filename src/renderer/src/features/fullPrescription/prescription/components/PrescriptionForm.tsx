@@ -46,17 +46,6 @@ export function PrescriptionForm({
     setPrescriptionData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleNestedChange = (
-    parent: "vitals",
-    field: string,
-    value: string,
-  ) => {
-    setPrescriptionData((prev) => ({
-      ...prev,
-      [parent]: { ...prev[parent], [field]: value },
-    }));
-  };
-
   return (
     <div className="flex h-screen">
       {/* Left Panel */}
@@ -69,23 +58,35 @@ export function PrescriptionForm({
 
           <TabsContent value="details">
             {/* Patient Info */}
-            <ul className="list-disc mt-4 text-left">
-              <li>
-                <span className="font-semibold">Patient Name:</span> {selectedAppointment?.name || ""}
-              </li>
-              <li>
-                <span className="font-semibold">Age:</span> {selectedAppointment?.age || ""}
-              </li>
-              <li>
-                <span className="font-semibold">Gender:</span> {selectedAppointment?.gender || ""}
-              </li>
-              <li>
-                <span className="font-semibold">Patient ID:</span> {selectedAppointment?.patientId || ""}
-              </li>
-              <li>
-                <span className="font-semibold">Appointment ID:</span> {selectedAppointment?.id || ""}
-              </li>
-            </ul>
+            <table className="w-full mt-4 text-left border border-gray-300 dark:border-gray-700 rounded-md overflow-hidden">
+              <tbody>
+                {/* Row 1 — Name */}
+                <tr className="border-b border-gray-300 dark:border-gray-700">
+                  <td className="p-2 font-semibold">Name</td>
+                  <td className="p-2">{selectedAppointment?.name || "—"}</td>
+                </tr>
+
+                {/* Row 2 — Age + Gender */}
+                <tr className="border-b border-gray-300 dark:border-gray-700">
+                  <td className="p-2 font-semibold">Age</td>
+                  <td className="p-2">{selectedAppointment?.age || "—"}</td>
+
+                  <td className="p-2 font-semibold">Gender</td>
+                  <td className="p-2">{selectedAppointment?.gender || "—"}</td>
+                </tr>
+
+                {/* Row 3 — Patient ID + Appointment ID */}
+                <tr>
+                  <td className="p-2 font-semibold">PID</td>
+                  <td className="p-2">
+                    {selectedAppointment?.patientId || "—"}
+                  </td>
+
+                  <td className="p-2 font-semibold">AID</td>
+                  <td className="p-2">{selectedAppointment?.id || "—"}</td>
+                </tr>
+              </tbody>
+            </table>
 
             {/* Reason */}
             <label className="block mt-6 text-left">Reason</label>
@@ -110,7 +111,6 @@ export function PrescriptionForm({
               value={prescriptionData.notes}
               onChange={(e) => handleChange("notes", e.target.value)}
             />
-
 
             {/* Examination Findings */}
             <h3 className="font-semibold text-md mt-6 mb-2 text-left">

@@ -43,7 +43,7 @@ export const prescriptions = sqliteTable("prescription", {
   appointmentId: text("appointment_id")
     .notNull()
     .references(() => appointments.id),
-  reason: text("reason").notNull(),
+  complain: text("complain").notNull(),
   symptoms: text("symptoms"),
   notes: text("notes"),
   vitals: blob("vitals", { mode: "json" }),

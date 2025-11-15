@@ -19,7 +19,7 @@ export function PrescriptionForm({
   const [activeTab, setActiveTab] = useState("details");
 
   const [prescriptionData, setPrescriptionData] = useState<Prescription>({
-    reason: "",
+    complain: "",
     symptoms: "",
     notes: "",
     vitals: {},
@@ -91,8 +91,8 @@ export function PrescriptionForm({
             {/* Reason */}
             <label className="block mt-6 text-left">Reason</label>
             <RichTextEditor
-              value={prescriptionData.reason || ""}
-              onChange={(val) => handleChange("reason", val)}
+              value={prescriptionData.complain || ""}
+              onChange={(val) => handleChange("complain", val)}
             />
 
             {/* Examination Findings */}

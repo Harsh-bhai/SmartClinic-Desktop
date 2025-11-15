@@ -5,7 +5,7 @@ import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
 
-//FIXME - add important forms fields in form as suggest by mama, persist current patient/appointment data and prescription data, add more imp forms, save it in database, create prescriptionApi, prescriptionSlice msg mama, create medicines section
+//FIXME - add important forms fields in form as suggest by mama, persist prescription data, add more imp forms, save it in database, create prescriptionSlice msg mama, create medicines section see chatgpt
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;
@@ -315,7 +315,7 @@ export function PrescriptionPreview({
                 <div
                   className="mt-1 prose prose-sm dark:prose-invert text-sm [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1"
                   dangerouslySetInnerHTML={{
-                    __html: prescriptionData.reason || "<p>—</p>",
+                    __html: prescriptionData.complain || "<p>—</p>",
                   }}
                 />
               </div>

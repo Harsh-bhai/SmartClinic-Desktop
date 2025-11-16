@@ -5,7 +5,8 @@ import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
 
-//FIXME - add important forms fields in form as suggest by mama, persist prescription data, add more imp forms, save it in database, create prescriptionSlice msg mama, create medicines section see chatgpt
+//FIXME - persist prescription data, save it in database, msg mama, create medicines section, create: floating bar in the box containg buttons(dropdown) like previous prescription, preious page(^), next page(v), pages (1/20), in the next visit section, add a date picker for next visit
+// check chatgpt
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;
@@ -175,6 +176,7 @@ export function PrescriptionPreview({
           {/* ✅ Visible content (your HTML) */}
           <div
             style={{
+              position: "relative",
               padding: "20mm",
               width: "100%",
               height: "100%",
@@ -288,11 +290,24 @@ export function PrescriptionPreview({
                   fontSize: "12pt",
                 }}
               >
-                <div style={{fontSize:"0.85rem", color:"grey", fontStyle:"italic"}}>
-                  <span >PID:</span> {selectedAppointment?.patientId}
+                <div
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "grey",
+                    fontStyle: "italic",
+                  }}
+                >
+                  <span>PID:</span> {selectedAppointment?.patientId}
                 </div>
-                <div style={{fontSize:"0.85rem", color:"slategray", fontStyle:"italic"}}>
-                  <span style={{fontSize:"0.75rem"}}>AID:</span> {selectedAppointment?.id}
+                <div
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "slategray",
+                    fontStyle: "italic",
+                  }}
+                >
+                  <span style={{ fontSize: "0.75rem" }}>AID:</span>{" "}
+                  {selectedAppointment?.id}
                 </div>
               </div>
               <div style={{ display: "flex", gap: "4px" }}>
@@ -307,13 +322,10 @@ export function PrescriptionPreview({
 
             {/* Prescription Details */}
             <div style={{ marginTop: "8mm", fontSize: "12pt" }}>
-              <h2 style={{ fontSize: "14pt", fontWeight: "bold" }}>
-                Prescription Details
-              </h2>
               <div>
-                <strong>Reason:</strong>
+                <strong>Cheif Complain:</strong>
                 <div
-                  className="mt-1 prose prose-sm dark:prose-invert text-sm [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1"
+                  className="mt-1 prose prose-sm dark:prose-invert"
                   dangerouslySetInnerHTML={{
                     __html: prescriptionData.complain || "<p>—</p>",
                   }}
@@ -321,15 +333,48 @@ export function PrescriptionPreview({
               </div>
 
               <div className="mt-2">
+                <strong>Symptoms:</strong>
+                <div
+                  className="mt-1 prose prose-sm dark:prose-invert"
+                  dangerouslySetInnerHTML={{
+                    __html: prescriptionData.symptoms || "<p>—</p>",
+                  }}
+                />
+              </div>
+
+              <div className="mt-2">
                 <strong>Examination Findings:</strong>
                 <div
-                  className="mt-1 prose prose-sm dark:prose-invert text-sm [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1"
+                  className="mt-1 prose prose-sm dark:prose-invert"
                   dangerouslySetInnerHTML={{
                     __html: prescriptionData.examinationFindings || "<p>—</p>",
                   }}
                 />
               </div>
+
+              <div className="mt-2">
+                <strong>Advice:</strong>
+                <p>{prescriptionData.advice || "—"}</p>
+              </div>
+
+              <div className="mt-2">
+                <strong>Next Visit:</strong>
+                <p>{prescriptionData.nextVisit || "—"}</p>
+              </div>
             </div>
+            {/* Prescription ID */}
+            <p
+              style={{
+                position: "absolute",
+                bottom: "5mm",
+                left: "5mm",
+                fontSize: "0.85rem",
+                color: "grey",
+                fontStyle: "italic",
+              }}
+            >
+              {prescriptionId}
+            </p>
           </div>
         </div>
       </div>

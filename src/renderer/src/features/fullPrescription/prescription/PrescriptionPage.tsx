@@ -1,61 +1,23 @@
-import React, { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import {
-  createPrescription,
-  fetchPrescriptionById,
-  setSelectedPrescription,
-} from "./prescriptionSlice";
+import {  useRef } from "react";
+import { useAppSelector } from "@/app/hooks";
 import { PrescriptionForm } from "./components/PrescriptionForm";
-import { Loader2 } from "lucide-react";
-import { Prescription } from "./prescriptionApi";
+import { randomAlphaNumId } from "@renderer/lib/id";
 
 export default function PrescriptionPage() {
-  const { prescriptionId } = useParams();
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  // Generate ID once per page load
+  const generatedPrescriptionId = useRef(randomAlphaNumId()).current;
 
-  const { selectedPrescription, loading } = useAppSelector(
-    (state) => state.prescription
+  const selectedAppointment = useAppSelector(
+    (state) => state.appointments.selectedAppointment
   );
 
-  useEffect(() => {
-    const initPrescription = async () => {
-      if (prescriptionId) {
-        dispatch(fetchPrescriptionById(prescriptionId));
-      } else {
-        const newPrescription: Prescription = {
-          reason: "",
-          symptoms: "",
-          notes: "",
-          vitals: {},
-          examinationFindings: "",
-          advice: "",
-          nextVisit: "",
-        };
-        const result = await dispatch(createPrescription(newPrescription));
-        if (createPrescription.fulfilled.match(result)) {
-          navigate(`/prescription/${result.payload.id}`);
-        }
-      }
-    };
-
-    initPrescription();
-    return () => {dispatch(setSelectedPrescription(null));}
-  }, [prescriptionId, dispatch, navigate]);
-
-  if (loading)
-    return (
-      <div className="flex h-screen items-center justify-center text-gray-600">
-        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-        Loading prescription...
-      </div>
-    );
+  if (!selectedAppointment)
+    return <div className="p-6">No appointment selected.</div>;
 
   return (
     <PrescriptionForm
-      prescriptionId={selectedPrescription?.id!}
-      existingPrescription={selectedPrescription}
+      prescriptionId={generatedPrescriptionId}
+      existingPrescription={null}   // No fetching for now
     />
   );
 }

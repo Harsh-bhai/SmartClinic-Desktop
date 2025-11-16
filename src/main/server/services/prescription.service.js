@@ -8,10 +8,8 @@ import { randomAlphaNumId } from "../utils/id.js";
  * CREATE Prescription
  */
 export async function createPrescription(data) {
-  const id = randomAlphaNumId();
-
   const row = {
-    id,
+    id: data.id,
     patientId: data.patientId,
     appointmentId: data.appointmentId || null,
     complain: data.complain || "",

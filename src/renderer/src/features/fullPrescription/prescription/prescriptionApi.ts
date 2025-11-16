@@ -6,9 +6,10 @@ export interface Prescription {
   id?: string;
   patientId?: string;
   appointmentId?: string;
-  complain: string;
-  symptoms: string;
+  complain?: string;
+  symptoms?: string;
   notes: string;
+  medicalHistory?: string;
   vitals: {
     temperature?: string;
     pulseRate?: string;

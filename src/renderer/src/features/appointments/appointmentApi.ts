@@ -15,6 +15,7 @@ export interface Appointment {
   name?: string;
   age?: number;
   gender?: string;
+  medicalHistory?: string;
   phone?: string;
   address?: string;
 }

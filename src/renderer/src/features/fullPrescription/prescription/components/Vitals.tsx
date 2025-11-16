@@ -1,41 +1,57 @@
-import { Input } from "@renderer/components/ui/input";
-import React from "react";
+// components/VitalsInput.tsx
+import { Input } from "@/components/ui/input";
 
-const Vitals = ({ setPrescriptionData }) => {
-  const handleNestedChange = (
-    parent: "vitals",
-    field: string,
-    value: string,
-  ) => {
-    setPrescriptionData((prev) => ({
-      ...prev,
-      [parent]: { ...prev[parent], [field]: value },
-    }));
+interface VitalsProps {
+  vitals: {
+    temperature?: string;
+    pulseRate?: string;
+    oxygenSaturation?: string;
+    bloodPressure?: string;
   };
+  onChange: (field: string, value: string) => void;
+}
+
+export function Vitals({ vitals, onChange }: VitalsProps) {
   return (
-    <div>
-      {" "}
-      {/* Vitals */}
-      <h3 className="font-semibold text-md mt-6 mb-2 text-left">Vitals</h3>
+    <div className="mt-6">
+      <h3 className="font-semibold text-md mb-2">Vitals</h3>
       <div className="grid grid-cols-2 gap-3">
-        {["temperature", "pulseRate", "oxygenSaturation", "bloodPressure"].map(
-          (field) => (
-            <div key={field}>
-              <label className="block capitalize text-left">
-                {field.replace(/([A-Z])/g, " $1")}
-              </label>
-              <Input
-                // value={(prescriptionData.vitals as any)[field] || ""}
-                onChange={(e) =>
-                  handleNestedChange("vitals", field, e.target.value)
-                }
-              />
-            </div>
-          ),
-        )}
+        <div>
+          <label className="block text-left">Body Temperature (°F)</label>
+          <Input
+            value={vitals.temperature || ""}
+            onChange={(e) => onChange("temperature", e.target.value)}
+            placeholder="e.g., 98.6°F"
+          />
+        </div>
+
+        <div>
+          <label className="block text-left">Pulse Rate (per min)</label>
+          <Input
+            value={vitals.pulseRate || ""}
+            onChange={(e) => onChange("pulseRate", e.target.value)}
+            placeholder="e.g., 88/min"
+          />
+        </div>
+
+        <div>
+          <label className="block text-left">Oxygen Saturation (%)</label>
+          <Input
+            value={vitals.oxygenSaturation || ""}
+            onChange={(e) => onChange("oxygenSaturation", e.target.value)}
+            placeholder="e.g., 96%"
+          />
+        </div>
+
+        <div>
+          <label className="block text-left">Blood Pressure (mmHg)</label>
+          <Input
+            value={vitals.bloodPressure || ""}
+            onChange={(e) => onChange("bloodPressure", e.target.value)}
+            placeholder="e.g., 130/90 mmHg"
+          />
+        </div>
       </div>
     </div>
   );
-};
-
-export default Vitals;
+}

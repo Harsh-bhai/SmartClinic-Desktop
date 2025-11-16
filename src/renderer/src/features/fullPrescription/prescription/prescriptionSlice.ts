@@ -1,3 +1,5 @@
+import { persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import {
   Prescription,
@@ -9,177 +11,186 @@ import {
   deletePrescriptionApi,
 } from "./prescriptionApi";
 
-// --------------------------------------------------
-// TYPES
-// --------------------------------------------------
+// ------------------------------
+// 🔄 ASYNC THUNKS
+// ------------------------------
 
-export interface PrescriptionState {
-  prescriptions: Prescription[];
-  selectedPrescription: Prescription | null;
-  loading: boolean;
-  error: string | null;
-}
-
-// --------------------------------------------------
-// INITIAL STATE
-// --------------------------------------------------
-
-const initialState: PrescriptionState = {
-  prescriptions: [],
-  selectedPrescription: null,
-  loading: false,
-  error: null,
-};
-
-// --------------------------------------------------
-// ASYNC THUNKS
-// --------------------------------------------------
-
-// 💊 Create prescription
 export const createPrescription = createAsyncThunk(
   "prescription/create",
   async (data: Prescription, { rejectWithValue }) => {
     try {
-      const res = await createPrescriptionApi(data);
-      return res as Prescription;
+      return await createPrescriptionApi(data);
     } catch (err: any) {
-      return rejectWithValue(err.message || "Failed to create prescription");
+      return rejectWithValue(err.response?.data || err.message);
     }
   },
 );
 
-// 📋 Get all prescriptions
-export const fetchPrescriptions = createAsyncThunk(
+export const fetchAllPrescriptions = createAsyncThunk(
   "prescription/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await getAllPrescriptionsApi();
-      return res as Prescription[];
+      return await getAllPrescriptionsApi();
     } catch (err: any) {
-      return rejectWithValue(err.message || "Failed to fetch prescriptions");
+      return rejectWithValue(err.response?.data || err.message);
     }
   },
 );
 
-// 🔍 Get prescription by ID
 export const fetchPrescriptionById = createAsyncThunk(
   "prescription/fetchById",
   async (id: string, { rejectWithValue }) => {
     try {
-      const res = await getPrescriptionByIdApi(id);
-      return res as Prescription;
+      return await getPrescriptionByIdApi(id);
     } catch (err: any) {
-      return rejectWithValue(err.message || "Failed to fetch prescription by ID");
+      return rejectWithValue(err.response?.data || err.message);
     }
   },
 );
 
-// 🔍 Get prescriptions by patientId
-export const fetchPrescriptionsByPatientId = createAsyncThunk(
+export const fetchPrescriptionByPatientId = createAsyncThunk(
   "prescription/fetchByPatientId",
   async (patientId: string, { rejectWithValue }) => {
     try {
-      const res = await getPrescriptionByPatientIdApi(patientId);
-      return res as Prescription[];
+      return await getPrescriptionByPatientIdApi(patientId);
     } catch (err: any) {
-      return rejectWithValue(
-        err.message || "Failed to fetch prescriptions for patient",
-      );
+      return rejectWithValue(err.response?.data || err.message);
     }
   },
 );
 
-// ✏️ Update prescription
 export const updatePrescription = createAsyncThunk(
   "prescription/update",
-  async ({ id, data }: { id: string; data: Prescription }, { rejectWithValue }) => {
+  async (
+    { id, data }: { id: string; data: Prescription },
+    { rejectWithValue },
+  ) => {
     try {
-      const res = await updatePrescriptionApi(id, data);
-      return res as Prescription;
+      return await updatePrescriptionApi(id, data);
     } catch (err: any) {
-      return rejectWithValue(err.message || "Failed to update prescription");
+      return rejectWithValue(err.response?.data || err.message);
     }
   },
 );
 
-// ❌ Delete prescription
 export const deletePrescription = createAsyncThunk(
   "prescription/delete",
   async (id: string, { rejectWithValue }) => {
     try {
-      await deletePrescriptionApi(id);
-      return id;
+      return await deletePrescriptionApi(id);
     } catch (err: any) {
-      return rejectWithValue(err.message || "Failed to delete prescription");
+      return rejectWithValue(err.response?.data || err.message);
     }
   },
 );
 
-// --------------------------------------------------
-// SLICE
-// --------------------------------------------------
+// ------------------------------
+// 📦 STATE
+// ------------------------------
+
+export interface PrescriptionState {
+  list: Prescription[];
+  selectedPrescription: Prescription | null;
+  draft: Prescription | null; // <-- ADD THIS
+  loading: boolean;
+  error: string | null;
+}
+
+const initialState: PrescriptionState = {
+  list: [],
+  selectedPrescription: null,
+  draft: null,
+  loading: false,
+  error: null,
+};
+
+// ------------------------------
+// 🧩 SLICE
+// ------------------------------
 
 const prescriptionSlice = createSlice({
   name: "prescription",
   initialState,
   reducers: {
-    setSelectedPrescription: (
-      state,
-      action: PayloadAction<Prescription | null>,
-    ) => {
+    setSelectedPrescription(state, action: PayloadAction<Prescription | null>) {
       state.selectedPrescription = action.payload;
     },
+    setDraftPrescription(state, action: PayloadAction<Prescription | null>) {
+      state.draft = action.payload;
+    },
   },
+
   extraReducers: (builder) => {
-    builder
-      // Fetch all
-      .addCase(fetchPrescriptions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchPrescriptions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.prescriptions = action.payload;
-      })
-      .addCase(fetchPrescriptions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
+    // Create
+    builder.addCase(createPrescription.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(createPrescription.fulfilled, (state, action) => {
+      state.loading = false;
+      state.list.push(action.payload);
+      state.selectedPrescription = action.payload;
+    });
+    builder.addCase(createPrescription.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
 
-      // Fetch by patientId
-      .addCase(fetchPrescriptionsByPatientId.fulfilled, (state, action) => {
-        state.loading = false;
-        state.prescriptions = action.payload;
-      })
+    // Fetch All
+    builder.addCase(fetchAllPrescriptions.fulfilled, (state, action) => {
+      state.list = action.payload;
+    });
 
-      // Fetch by ID
-      .addCase(fetchPrescriptionById.fulfilled, (state, action) => {
-        state.loading = false;
+    // Fetch by ID
+    builder.addCase(fetchPrescriptionById.fulfilled, (state, action) => {
+      state.selectedPrescription = action.payload;
+    });
+
+    // Fetch by patientId
+    builder.addCase(fetchPrescriptionByPatientId.fulfilled, (state, action) => {
+      state.list = action.payload;
+    });
+
+    // Update
+    builder.addCase(updatePrescription.fulfilled, (state, action) => {
+      const index = state.list.findIndex((p) => p.id === action.payload.id);
+      if (index !== -1) state.list[index] = action.payload;
+
+      if (
+        state.selectedPrescription &&
+        state.selectedPrescription.id === action.payload.id
+      ) {
         state.selectedPrescription = action.payload;
-      })
+      }
+    });
 
-      // Create
-      .addCase(createPrescription.fulfilled, (state, action) => {
-        state.prescriptions.push(action.payload);
-      })
+    // Delete
+    builder.addCase(deletePrescription.fulfilled, (state, action) => {
+      state.list = state.list.filter((p) => p.id !== action.meta.arg);
 
-      // Update
-      .addCase(updatePrescription.fulfilled, (state, action) => {
-        const index = state.prescriptions.findIndex(
-          (p) => p.id === action.payload.id,
-        );
-        if (index !== -1) state.prescriptions[index] = action.payload;
-      })
-
-      // Delete
-      .addCase(deletePrescription.fulfilled, (state, action) => {
-        state.prescriptions = state.prescriptions.filter(
-          (p) => p.id !== action.payload,
-        );
-      });
+      if (
+        state.selectedPrescription &&
+        state.selectedPrescription.id === action.meta.arg
+      ) {
+        state.selectedPrescription = null;
+      }
+    });
   },
 });
 
-export const { setSelectedPrescription } = prescriptionSlice.actions;
+// ------------------------------
+// 📤 EXPORTS
+// ------------------------------
 
-export const prescriptionReducer = prescriptionSlice.reducer;
+export const { setSelectedPrescription, setDraftPrescription } =
+  prescriptionSlice.actions;
+
+const persistConfig = {
+  key: "prescription",
+  storage,
+  whitelist: ["draft"],
+};
+
+export const prescriptionReducer = persistReducer(
+  persistConfig,
+  prescriptionSlice.reducer,
+);

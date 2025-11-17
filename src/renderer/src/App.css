@@ -40,3 +40,20 @@
 .read-the-docs {
   color: #888;
 }
+
+.ProseMirror ul {
+  list-style-type: disc !important;
+  margin-left: 1.5rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal !important;
+  margin-left: 1.5rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.ProseMirror li {
+  margin-top: 4px;
+}
+

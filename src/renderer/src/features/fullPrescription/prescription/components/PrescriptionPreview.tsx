@@ -5,8 +5,8 @@ import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
 
-//FIXME - persist prescription data, save it in database, msg mama, create medicines section, create: floating bar in the box containg buttons(dropdown) like previous prescription, preious page(^), next page(v), pages (1/20), in the next visit section, add a date picker for next visit
-// check chatgpt
+//FIXME - persist prescription data, save it in database, create medicines section, create: floating bar in the box containg buttons(dropdown) like previous prescription, preious page(^), next page(v), pages (1/20), in the next visit section, add a date picker for next visit
+// check and calculate and serach sms cost
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;
@@ -325,7 +325,7 @@ export function PrescriptionPreview({
               <div>
                 <strong>Cheif Complain:</strong>
                 <div
-                  className="mt-1 prose prose-sm dark:prose-invert"
+                  className="prescription-content mt-1 prose prose-sm dark:prose-invert"
                   dangerouslySetInnerHTML={{
                     __html: prescriptionData.complain || "<p>—</p>",
                   }}
@@ -335,7 +335,7 @@ export function PrescriptionPreview({
               <div className="mt-2">
                 <strong>Symptoms:</strong>
                 <div
-                  className="mt-1 prose prose-sm dark:prose-invert"
+                  className="prescription-content mt-1 prose prose-sm dark:prose-invert"
                   dangerouslySetInnerHTML={{
                     __html: prescriptionData.symptoms || "<p>—</p>",
                   }}
@@ -345,7 +345,7 @@ export function PrescriptionPreview({
               <div className="mt-2">
                 <strong>Examination Findings:</strong>
                 <div
-                  className="mt-1 prose prose-sm dark:prose-invert"
+                  className="prescription-content mt-1 prose prose-sm dark:prose-invert"
                   dangerouslySetInnerHTML={{
                     __html: prescriptionData.examinationFindings || "<p>—</p>",
                   }}

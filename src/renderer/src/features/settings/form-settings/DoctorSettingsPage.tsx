@@ -44,19 +44,11 @@ export default function DoctorSettingsPage() {
   };
 
   return (
-    <div
-      className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${
-        isDark ? "bg-neutral-950" : "bg-gray-100"
-      }`}
-    >
-      <Card
-        className={`w-[700px] shadow-2xl ${
-          isDark ? "bg-neutral-900 border-neutral-800" : "bg-white border-gray-200"
-        }`}
-      >
+    <div className="min-h-screen flex items-center justify-center">
+      <Card className="w-[700px]">
         <CardHeader>
           <CardTitle className="text-2xl font-semibold text-center">
-            🏥 Doctor & Clinic Information
+            Doctor & Clinic Information
           </CardTitle>
         </CardHeader>
 
@@ -146,13 +138,7 @@ export default function DoctorSettingsPage() {
             <div className="flex items-center gap-4">
               <label className="cursor-pointer">
                 <input type="file" accept="image/*" onChange={handleLogoUpload} hidden />
-                <span
-                  className={`inline-block px-4 py-2 rounded-md ${
-                    isDark
-                      ? "bg-neutral-800 hover:bg-neutral-700 text-gray-200"
-                      : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                  }`}
-                >
+                <span className="inline-block px-4 py-2 rounded-md">
                   Upload Logo
                 </span>
               </label>
@@ -169,22 +155,7 @@ export default function DoctorSettingsPage() {
 
           {/* Buttons */}
           <div className="flex justify-end gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() =>
-                setFormData({
-                  doctorName: "",
-                  qualification: "",
-                  hospitalName: "",
-                  contactNumber: "",
-                  registrationNo: "",
-                  licenseNo: "",
-                  timings: "",
-                  address: "",
-                //   logo: "",
-                })
-              }
-            >
+            <Button variant="outline" onClick={() => setFormData({ ...formData, doctorName: "", qualification: "", hospitalName: "", contactNumber: "", registrationNo: "", licenseNo: "", timings: "", address: ""})}>
               Reset
             </Button>
             <Button onClick={handleSave}>Save Settings</Button>

@@ -71,8 +71,8 @@ const data = {
       icon: User,
     },
     {
-      title: "Form Settings",
-      url: "/form-settings",
+      title: "Settings",
+      url: "/settings",
       icon: IconUsers,
     },
     {

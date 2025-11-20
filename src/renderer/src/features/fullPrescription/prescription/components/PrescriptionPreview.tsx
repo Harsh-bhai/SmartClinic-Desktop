@@ -7,6 +7,8 @@ import { Prescription } from "../prescriptionApi";
 
 //FIXME - persist prescription data, save it in database, create medicines section, create: floating bar in the box containg buttons(dropdown) like previous prescription, preious page(^), next page(v), pages (1/20), in the next visit section, add a date picker for next visit
 // check and calculate and serach sms cost
+// check eka.care website for inspiration of prescription page
+//TODO - hindi text
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;

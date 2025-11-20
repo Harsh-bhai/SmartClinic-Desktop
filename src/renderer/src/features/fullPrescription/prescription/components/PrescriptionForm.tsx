@@ -1,58 +1,52 @@
-// prescriptionForm.tsx
-import { useEffect, useState } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { PrescriptionPreview } from "./PrescriptionPreview";
-import { useAppDispatch, useAppSelector } from "@renderer/app/hooks";
-import { Prescription } from "../prescriptionApi";
-import { RichTextEditor } from "@/components/ui/RichTextEditor";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+
+import { PatientInfo } from "./PatientInfo";
+import { RichTextSection } from "./RichTextSection";
 import { Vitals } from "./Vitals";
+import { useAppDispatch, useAppSelector } from "@renderer/app/hooks";
+import { Input } from "@renderer/components/ui/input";
+import { TabsList, TabsTrigger, TabsContent, Tabs } from "@renderer/components/ui/tabs";
+import { Textarea } from "@renderer/components/ui/textarea";
+
+import { useState } from "react";
+import { Prescription } from "../prescriptionApi";
 import { setDraftPrescription } from "../prescriptionSlice";
+import { PrescriptionPreview } from "./PrescriptionPreview";
 
-interface PrescriptionFormProps {
-  prescriptionId: string;
-  existingPrescription: Prescription | null;
-}
-
-export function PrescriptionForm({ prescriptionId }: PrescriptionFormProps) {
+export function PrescriptionForm({ prescriptionId }: { prescriptionId: string }) {
   const [activeTab, setActiveTab] = useState("details");
+  const dispatch = useAppDispatch();
+
   const draft = useAppSelector((state) => state.prescription.draft);
+  const selectedAppointment = useAppSelector((state) => state.appointments.selectedAppointment);
 
-
-  const selectedAppointment = useAppSelector(
-    (state) => state.appointments.selectedAppointment
+  const [prescriptionData, setPrescriptionData] = useState<Prescription>(
+    draft || {
+      patientId: selectedAppointment?.patientId,
+      appointmentId: selectedAppointment?.id,
+      complain: "",
+      medicalHistory: "",
+      notes: "",
+      vitals: {},
+      examinationFindings: "",
+      advice: "",
+      nextVisit: "",
+    }
   );
 
- const [prescriptionData, setPrescriptionData] = useState<Prescription>(
-  draft || {
-    patientId: selectedAppointment?.patientId,
-    appointmentId: selectedAppointment?.id,
-    complain: "",
-    medicalHistory: "",
-    notes: "",
-    vitals: {},
-    examinationFindings: "",
-    advice: "",
-    nextVisit: "",
-  }
-);
-
-
-const dispatch = useAppDispatch();
-
-const handleChange = (field: keyof Prescription, value: any) => {
-  setPrescriptionData((prev) => {
-    const updated = { ...prev, [field]: value };
-    dispatch(setDraftPrescription(updated));   // <-- PERSIST LIVE
-    return updated;
-  });
-};
+  const handleChange = (field: keyof Prescription, value: any) => {
+    setPrescriptionData((prev) => {
+      const updated = { ...prev, [field]: value };
+      dispatch(setDraftPrescription(updated));
+      return updated;
+    });
+  };
 
   return (
     <div className="flex h-screen">
       {/* LEFT PANEL */}
       <div className="w-1/2 p-6 overflow-y-auto border-r border-gray-300 dark:border-gray-700">
+        
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="details">Prescription</TabsTrigger>
@@ -60,84 +54,99 @@ const handleChange = (field: keyof Prescription, value: any) => {
           </TabsList>
 
           <TabsContent value="details">
-            {/* Patient Info */}
-            <table className="w-full mt-4 text-left border border-gray-300 dark:border-gray-700 rounded-md overflow-hidden">
-              <tbody>
-                <tr className="border-b">
-                  <td className="p-2 font-semibold">Name</td>
-                  <td className="p-2">{selectedAppointment?.name}</td>
-                </tr>
 
-                <tr className="border-b">
-                  <td className="p-2 font-semibold">Age</td>
-                  <td className="p-2">{selectedAppointment?.age}</td>
-                  <td className="p-2 font-semibold">Gender</td>
-                  <td className="p-2">{selectedAppointment?.gender}</td>
-                </tr>
+            {/* PATIENT INFO ALWAYS VISIBLE */}
+            <PatientInfo selectedAppointment={selectedAppointment} />
 
-                <tr>
-                  <td className="p-2 font-semibold">PID</td>
-                  <td className="p-2">{selectedAppointment?.patientId}</td>
-                  <td className="p-2 font-semibold">AID</td>
-                  <td className="p-2">{selectedAppointment?.id}</td>
-                </tr>
-              </tbody>
-            </table>
+            {/* MAIN ACCORDION */}
+            <Accordion type="multiple" className="mt-4">
 
+              {/* MEDICAL HISTORY */}
+              <AccordionItem value="medicalHistory">
+                <AccordionTrigger>Patient Medical History</AccordionTrigger>
+                <AccordionContent>
+                  <RichTextSection
+                    label=""
+                    value={prescriptionData.medicalHistory}
+                    onChange={(val: any) => handleChange("medicalHistory", val)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* ORDER CHANGED HERE */}
-            {/* 1) MEDICAL HISTORY */}
-            <label className="block mt-6 text-left">Patient Medical History</label>
-            <RichTextEditor
-              value={selectedAppointment?.medicalHistory || ""}
-              onChange={(val) => handleChange("medicalHistory" as any, val)}
-            />
+              {/* COMPLAIN */}
+              <AccordionItem value="complain">
+                <AccordionTrigger>Chief Complaint</AccordionTrigger>
+                <AccordionContent>
+                  <RichTextSection
+                    label=""
+                    value={prescriptionData.complain}
+                    onChange={(val: any) => handleChange("complain", val)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* 2) COMPLAIN */}
-            <label className="block mt-6 text-left">Chief Complaint</label>
-            <RichTextEditor
-              value={prescriptionData.complain ?? ""}
-              onChange={(val) => handleChange("complain", val)}
-            />
+              {/* EXAMINATION FINDINGS */}
+              <AccordionItem value="examFindings">
+                <AccordionTrigger>Examination Findings</AccordionTrigger>
+                <AccordionContent>
+                  <RichTextSection
+                    label=""
+                    value={prescriptionData.examinationFindings}
+                    onChange={(val: any) => handleChange("examinationFindings", val)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* 3) EXAMINATION FINDINGS */}
-            <label className="block mt-6 text-left">Examination Findings</label>
-            <RichTextEditor
-              value={prescriptionData.examinationFindings}
-              onChange={(val) => handleChange("examinationFindings", val)}
-            />
+              {/* VITALS */}
+              <AccordionItem value="vitals">
+                <AccordionTrigger>Vitals</AccordionTrigger>
+                <AccordionContent>
+                  <Vitals
+                    vitals={prescriptionData.vitals}
+                    onChange={(field, val) =>
+                      handleChange("vitals", {
+                        ...prescriptionData.vitals,
+                        [field]: val,
+                      })
+                    }
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* VITALS SECTION */}
-            <Vitals
-              vitals={prescriptionData.vitals || {}}
-              onChange={(field, val) =>
-                handleChange("vitals", {
-                  ...prescriptionData.vitals,
-                  [field]: val,
-                })
-              }
-            />
+              {/* NOTES */}
+              <AccordionItem value="notes">
+                <AccordionTrigger>Notes</AccordionTrigger>
+                <AccordionContent>
+                  <Textarea
+                    value={prescriptionData.notes}
+                    onChange={(e) => handleChange("notes", e.target.value)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Notes */}
-            <label className="block mt-4 text-left">Notes</label>
-            <Textarea
-              value={prescriptionData.notes}
-              onChange={(e) => handleChange("notes", e.target.value)}
-            />
+              {/* ADVICE */}
+              <AccordionItem value="advice">
+                <AccordionTrigger>Advice</AccordionTrigger>
+                <AccordionContent>
+                  <Textarea
+                    value={prescriptionData.advice}
+                    onChange={(e) => handleChange("advice", e.target.value)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Advice */}
-            <label className="block mt-4 text-left">Advice</label>
-            <Textarea
-              value={prescriptionData.advice}
-              onChange={(e) => handleChange("advice", e.target.value)}
-            />
+              {/* NEXT VISIT */}
+              <AccordionItem value="nextVisit">
+                <AccordionTrigger>Next Visit</AccordionTrigger>
+                <AccordionContent>
+                  <Input
+                    value={prescriptionData.nextVisit}
+                    onChange={(e) => handleChange("nextVisit", e.target.value)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Next Visit */}
-            <label className="block mt-4 text-left">Next Visit</label>
-            <Input
-              value={prescriptionData.nextVisit}
-              onChange={(e) => handleChange("nextVisit", e.target.value)}
-            />
+            </Accordion>
           </TabsContent>
         </Tabs>
       </div>

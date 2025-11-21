@@ -17,7 +17,7 @@ export default function PrescriptionPage() {
   return (
     <PrescriptionForm
       prescriptionId={generatedPrescriptionId}
-      existingPrescription={null}   // No fetching for now
+      // existingPrescription={null}   // No fetching for now
     />
   );
 }

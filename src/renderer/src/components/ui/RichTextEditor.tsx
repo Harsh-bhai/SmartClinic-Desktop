@@ -7,6 +7,8 @@ import Color from "@tiptap/extension-color";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
+import { Placeholder } from "@tiptap/extensions";
+
 import {
   Bold,
   Italic,
@@ -89,6 +91,11 @@ export function RichTextEditor({
       OrderedList,
       ListItem,
       FontSize,
+      Placeholder.configure({
+        placeholder: placeholder || "Start typing...", // <-- USE YOUR PLACEHOLDER
+        emptyEditorClass:
+          "text-gray-400 dark:text-gray-500 pointer-events-none",
+      }),
     ],
     content: value || "",
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -96,7 +103,7 @@ export function RichTextEditor({
       attributes: {
         class:
           "min-h-[180px] w-full rounded-md border border-gray-300 dark:border-gray-700 p-3 text-sm focus:outline-none bg-white dark:bg-neutral-900 text-left",
-          spellcheck: "false",
+        spellcheck: "false",
       },
     },
   });

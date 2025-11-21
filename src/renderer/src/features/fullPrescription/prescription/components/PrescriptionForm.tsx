@@ -66,6 +66,7 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Patient Medical History</AccordionTrigger>
                 <AccordionContent>
                   <RichTextSection
+                    placeholder={"No Medical History"}
                     label=""
                     value={prescriptionData.medicalHistory}
                     onChange={(val: any) => handleChange("medicalHistory", val)}
@@ -78,6 +79,7 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Chief Complaint</AccordionTrigger>
                 <AccordionContent>
                   <RichTextSection
+                    placeholder={"Write the Cheif Complain"}
                     label=""
                     value={prescriptionData.complain}
                     onChange={(val: any) => handleChange("complain", val)}
@@ -90,6 +92,7 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Examination Findings</AccordionTrigger>
                 <AccordionContent>
                   <RichTextSection
+                    placeholder={"Write Examination Findings"}
                     label=""
                     value={prescriptionData.examinationFindings}
                     onChange={(val: any) => handleChange("examinationFindings", val)}
@@ -118,6 +121,7 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Notes</AccordionTrigger>
                 <AccordionContent>
                   <Textarea
+                    placeholder="Write Notes Here ..."
                     value={prescriptionData.notes}
                     onChange={(e) => handleChange("notes", e.target.value)}
                   />
@@ -129,6 +133,7 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Advice</AccordionTrigger>
                 <AccordionContent>
                   <Textarea
+                    placeholder="Write Advice Here ..."
                     value={prescriptionData.advice}
                     onChange={(e) => handleChange("advice", e.target.value)}
                   />

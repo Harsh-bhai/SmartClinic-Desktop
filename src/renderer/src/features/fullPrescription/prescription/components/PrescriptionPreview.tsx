@@ -9,6 +9,7 @@ import { Prescription } from "../prescriptionApi";
 // check and calculate and serach sms cost
 // check eka.care website for inspiration of prescription page
 //TODO - hindi text
+// check chatgpt for placeholder not working
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;

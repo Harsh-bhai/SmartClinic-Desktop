@@ -7,7 +7,7 @@ import Color from "@tiptap/extension-color";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
-import { Placeholder } from "@tiptap/extensions";
+import Placeholder from "@tiptap/extension-placeholder";
 
 import {
   Bold,
@@ -81,6 +81,9 @@ export function RichTextEditor({
     },
   });
 
+  // Normalize empty values so TipTap understands editor is empty
+  const initialContent = !value || value.trim() === "" ? "" : value;
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -91,13 +94,13 @@ export function RichTextEditor({
       OrderedList,
       ListItem,
       FontSize,
-      Placeholder.configure({
-        placeholder: placeholder || "Start typing...", // <-- USE YOUR PLACEHOLDER
-        emptyEditorClass:
-          "text-gray-400 dark:text-gray-500 pointer-events-none",
-      }),
+Placeholder.configure({
+  placeholder,
+  emptyNodeClass:
+    'first:before:text-gray-400 first:before:float-left first:before:content-[attr(data-placeholder)] first:before:pointer-events-none',
+}),
     ],
-    content: value || "",
+    content: initialContent,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
@@ -278,7 +281,7 @@ export function RichTextEditor({
       </div>
 
       {/* Editor */}
-      <EditorContent editor={editor} placeholder={placeholder} />
+      <EditorContent editor={editor} />
     </div>
   );
 }

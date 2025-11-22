@@ -58,3 +58,18 @@
   margin-top: 4px;
 }
 
+/* TipTap Placeholder Support */
+/* Placeholder (at the top) */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Dark mode placeholder */
+.dark .ProseMirror p.is-editor-empty:first-child::before {
+  color: #6b7280; /* Tailwind gray-500 */
+}
+

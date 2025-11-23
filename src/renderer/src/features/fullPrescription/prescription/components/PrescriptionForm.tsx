@@ -4,14 +4,30 @@ import { PatientInfo } from "./PatientInfo";
 import { RichTextSection } from "./RichTextSection";
 import { Vitals } from "./Vitals";
 import { useAppDispatch, useAppSelector } from "@renderer/app/hooks";
-import { Input } from "@renderer/components/ui/input";
+
 import { TabsList, TabsTrigger, TabsContent, Tabs } from "@renderer/components/ui/tabs";
 import { Textarea } from "@renderer/components/ui/textarea";
+import { Input } from "@renderer/components/ui/input";
 
 import { useState } from "react";
 import { Prescription } from "../prescriptionApi";
 import { setDraftPrescription } from "../prescriptionSlice";
 import { PrescriptionPreview } from "./PrescriptionPreview";
+
+import { CalendarIcon } from "lucide-react";
+import {
+  DatePicker,
+  Button,
+  Group,
+  Label,
+  Popover,
+  Dialog,
+} from "react-aria-components";
+
+import { DateInput } from "@/components/ui/datefield-rac";
+import { Calendar } from "@/components/ui/calendar-rac";
+import { parseDate } from "@internationalized/date";
+
 
 export function PrescriptionForm({ prescriptionId }: { prescriptionId: string }) {
   const [activeTab, setActiveTab] = useState("details");
@@ -55,10 +71,9 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
 
           <TabsContent value="details">
 
-            {/* PATIENT INFO ALWAYS VISIBLE */}
+            {/* PATIENT INFO */}
             <PatientInfo selectedAppointment={selectedAppointment} />
 
-            {/* MAIN ACCORDION */}
             <Accordion type="multiple" className="mt-4">
 
               {/* MEDICAL HISTORY */}
@@ -66,10 +81,10 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Patient Medical History</AccordionTrigger>
                 <AccordionContent>
                   <RichTextSection
-                    placeholder={"No Medical History"}
+                    placeholder="No Medical History"
                     label=""
                     value={prescriptionData.medicalHistory}
-                    onChange={(val: any) => handleChange("medicalHistory", val)}
+                    onChange={(val) => handleChange("medicalHistory", val)}
                   />
                 </AccordionContent>
               </AccordionItem>
@@ -79,23 +94,23 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Chief Complaint</AccordionTrigger>
                 <AccordionContent>
                   <RichTextSection
-                    placeholder={"Write the Cheif Complain"}
+                    placeholder="Write the Chief Complaint"
                     label=""
                     value={prescriptionData.complain}
-                    onChange={(val: any) => handleChange("complain", val)}
+                    onChange={(val) => handleChange("complain", val)}
                   />
                 </AccordionContent>
               </AccordionItem>
 
-              {/* EXAMINATION FINDINGS */}
+              {/* EXAM FINDINGS */}
               <AccordionItem value="examFindings">
                 <AccordionTrigger>Examination Findings</AccordionTrigger>
                 <AccordionContent>
                   <RichTextSection
-                    placeholder={"Write Examination Findings"}
+                    placeholder="Write Examination Findings"
                     label=""
                     value={prescriptionData.examinationFindings}
-                    onChange={(val: any) => handleChange("examinationFindings", val)}
+                    onChange={(val) => handleChange("examinationFindings", val)}
                   />
                 </AccordionContent>
               </AccordionItem>
@@ -107,10 +122,7 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                   <Vitals
                     vitals={prescriptionData.vitals}
                     onChange={(field, val) =>
-                      handleChange("vitals", {
-                        ...prescriptionData.vitals,
-                        [field]: val,
-                      })
+                      handleChange("vitals", { ...prescriptionData.vitals, [field]: val })
                     }
                   />
                 </AccordionContent>
@@ -121,7 +133,7 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Notes</AccordionTrigger>
                 <AccordionContent>
                   <Textarea
-                    placeholder="Write Notes Here ..."
+                    placeholder="Write Notes Here..."
                     value={prescriptionData.notes}
                     onChange={(e) => handleChange("notes", e.target.value)}
                   />
@@ -133,26 +145,62 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                 <AccordionTrigger>Advice</AccordionTrigger>
                 <AccordionContent>
                   <Textarea
-                    placeholder="Write Advice Here ..."
+                    placeholder="Write Advice Here..."
                     value={prescriptionData.advice}
                     onChange={(e) => handleChange("advice", e.target.value)}
                   />
                 </AccordionContent>
               </AccordionItem>
 
-              {/* NEXT VISIT */}
+              {/* NEXT VISIT — with DATE PICKER */}
               <AccordionItem value="nextVisit">
-                <AccordionTrigger>Next Visit</AccordionTrigger>
-                <AccordionContent>
-                  <Input
-                    value={prescriptionData.nextVisit}
-                    onChange={(e) => handleChange("nextVisit", e.target.value)}
-                  />
-                </AccordionContent>
-              </AccordionItem>
+  <AccordionTrigger>Next Visit</AccordionTrigger>
+  <AccordionContent>
+    <DatePicker
+      value={
+        prescriptionData.nextVisit
+          ? parseDate(prescriptionData.nextVisit) // <- Converts "2025-01-20" → CalendarDate
+          : null
+      }
+      onChange={(dateValue) => {
+        if (!dateValue) {
+          handleChange("nextVisit", "");
+        } else {
+          // CalendarDate → "YYYY-MM-DD"
+          const iso = dateValue.toString(); 
+          handleChange("nextVisit", iso);
+        }
+      }}
+      className="*:not-first:mt-2"
+    >
+      <Label className="text-sm font-medium">Select Date</Label>
+
+      <div className="flex">
+        <Group className="w-full">
+          <DateInput className="pe-9" />
+        </Group>
+
+        <Button className="z-10 -ms-9 -me-px flex w-9 items-center justify-center rounded-e-md text-muted-foreground/80 hover:text-foreground">
+          <CalendarIcon size={16} />
+        </Button>
+      </div>
+
+      <Popover
+        className="z-50 rounded-lg border bg-background shadow-lg p-2"
+        offset={4}
+      >
+        <Dialog className="max-h-[inherit] overflow-auto p-2">
+          <Calendar />
+        </Dialog>
+      </Popover>
+    </DatePicker>
+  </AccordionContent>
+</AccordionItem>
+
 
             </Accordion>
           </TabsContent>
+
         </Tabs>
       </div>
 

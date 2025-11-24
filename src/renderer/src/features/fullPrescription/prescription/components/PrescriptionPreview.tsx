@@ -10,7 +10,7 @@ import { Prescription } from "../prescriptionApi";
 // check eka.care website for inspiration of prescription page
 //TODO - hindi text
 // check chatgpt for placeholder not working
-// calendar addtion in the next visit section is causing too much error, fix that with chatgpt
+// testing of nextvisit date component is needed
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;

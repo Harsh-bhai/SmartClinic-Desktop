@@ -1,11 +1,21 @@
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 import { PatientInfo } from "./PatientInfo";
 import { RichTextSection } from "./RichTextSection";
 import { Vitals } from "./Vitals";
 import { useAppDispatch, useAppSelector } from "@renderer/app/hooks";
 
-import { TabsList, TabsTrigger, TabsContent, Tabs } from "@renderer/components/ui/tabs";
+import {
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  Tabs,
+} from "@renderer/components/ui/tabs";
 import { Textarea } from "@renderer/components/ui/textarea";
 import { Input } from "@renderer/components/ui/input";
 
@@ -26,15 +36,20 @@ import {
 
 import { DateInput } from "@/components/ui/datefield-rac";
 import { Calendar } from "@/components/ui/calendar-rac";
-import { parseDate } from "@internationalized/date";
+import { today, parseDate } from "@internationalized/date";
 
-
-export function PrescriptionForm({ prescriptionId }: { prescriptionId: string }) {
+export function PrescriptionForm({
+  prescriptionId,
+}: {
+  prescriptionId: string;
+}) {
   const [activeTab, setActiveTab] = useState("details");
   const dispatch = useAppDispatch();
 
   const draft = useAppSelector((state) => state.prescription.draft);
-  const selectedAppointment = useAppSelector((state) => state.appointments.selectedAppointment);
+  const selectedAppointment = useAppSelector(
+    (state) => state.appointments.selectedAppointment,
+  );
 
   const [prescriptionData, setPrescriptionData] = useState<Prescription>(
     draft || {
@@ -47,7 +62,7 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
       examinationFindings: "",
       advice: "",
       nextVisit: "",
-    }
+    },
   );
 
   const handleChange = (field: keyof Prescription, value: any) => {
@@ -62,7 +77,6 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
     <div className="flex h-screen">
       {/* LEFT PANEL */}
       <div className="w-1/2 p-6 overflow-y-auto border-r border-gray-300 dark:border-gray-700">
-        
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="details">Prescription</TabsTrigger>
@@ -70,12 +84,10 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
           </TabsList>
 
           <TabsContent value="details">
-
             {/* PATIENT INFO */}
             <PatientInfo selectedAppointment={selectedAppointment} />
 
             <Accordion type="multiple" className="mt-4">
-
               {/* MEDICAL HISTORY */}
               <AccordionItem value="medicalHistory">
                 <AccordionTrigger>Patient Medical History</AccordionTrigger>
@@ -122,7 +134,10 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
                   <Vitals
                     vitals={prescriptionData.vitals}
                     onChange={(field, val) =>
-                      handleChange("vitals", { ...prescriptionData.vitals, [field]: val })
+                      handleChange("vitals", {
+                        ...prescriptionData.vitals,
+                        [field]: val,
+                      })
                     }
                   />
                 </AccordionContent>
@@ -154,53 +169,50 @@ export function PrescriptionForm({ prescriptionId }: { prescriptionId: string })
 
               {/* NEXT VISIT — with DATE PICKER */}
               <AccordionItem value="nextVisit">
-  <AccordionTrigger>Next Visit</AccordionTrigger>
-  <AccordionContent>
-    <DatePicker
-      value={
-        prescriptionData.nextVisit
-          ? parseDate(prescriptionData.nextVisit) // <- Converts "2025-01-20" → CalendarDate
-          : null
-      }
-      onChange={(dateValue) => {
-        if (!dateValue) {
-          handleChange("nextVisit", "");
-        } else {
-          // CalendarDate → "YYYY-MM-DD"
-          const iso = dateValue.toString(); 
-          handleChange("nextVisit", iso);
-        }
-      }}
-      className="*:not-first:mt-2"
-    >
-      <Label className="text-sm font-medium">Select Date</Label>
+                <AccordionTrigger>Next Visit</AccordionTrigger>
+                <AccordionContent>
+                  <DatePicker
+                    value={
+                      prescriptionData.nextVisit
+                        ? parseDate(prescriptionData.nextVisit)
+                        : today("UTC").add({ days: 7 }) // ✔ default = today + 7 days
+                    }
+                    onChange={(dateValue) => {
+                      if (!dateValue) {
+                        handleChange("nextVisit", "");
+                      } else {
+                        // CalendarDate → "YYYY-MM-DD"
+                        const iso = dateValue.toString();
+                        handleChange("nextVisit", iso);
+                      }
+                    }}
+                    className="*:not-first:mt-2"
+                  >
+                    <Label className="text-sm font-medium">Select Date</Label>
 
-      <div className="flex">
-        <Group className="w-full">
-          <DateInput className="pe-9" />
-        </Group>
+                    <div className="flex">
+                      <Group className="w-full">
+                        <DateInput className="pe-9" />
+                      </Group>
 
-        <Button className="z-10 -ms-9 -me-px flex w-9 items-center justify-center rounded-e-md text-muted-foreground/80 hover:text-foreground">
-          <CalendarIcon size={16} />
-        </Button>
-      </div>
+                      <Button className="z-10 -ms-9 -me-px flex w-9 items-center justify-center rounded-e-md text-muted-foreground/80 hover:text-foreground">
+                        <CalendarIcon size={16} />
+                      </Button>
+                    </div>
 
-      <Popover
-        className="z-50 rounded-lg border bg-background shadow-lg p-2"
-        offset={4}
-      >
-        <Dialog className="max-h-[inherit] overflow-auto p-2">
-          <Calendar />
-        </Dialog>
-      </Popover>
-    </DatePicker>
-  </AccordionContent>
-</AccordionItem>
-
-
+                    <Popover
+                      className="z-50 rounded-lg border bg-background shadow-lg p-2"
+                      offset={4}
+                    >
+                      <Dialog className="max-h-[inherit] overflow-auto p-2">
+                        <Calendar />
+                      </Dialog>
+                    </Popover>
+                  </DatePicker>
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
           </TabsContent>
-
         </Tabs>
       </div>
 

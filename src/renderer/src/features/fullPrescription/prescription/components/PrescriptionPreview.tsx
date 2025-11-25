@@ -11,6 +11,7 @@ import { Prescription } from "../prescriptionApi";
 //TODO - hindi text
 // check chatgpt for placeholder not working
 // testing of nextvisit date component is needed
+// default date 7 days from today is added in nextvisit but check for sunday and holiday
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;

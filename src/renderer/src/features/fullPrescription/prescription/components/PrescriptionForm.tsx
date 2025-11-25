@@ -19,7 +19,7 @@ import {
 import { Textarea } from "@renderer/components/ui/textarea";
 import { Input } from "@renderer/components/ui/input";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Prescription } from "../prescriptionApi";
 import { setDraftPrescription } from "../prescriptionSlice";
 import { PrescriptionPreview } from "./PrescriptionPreview";
@@ -37,6 +37,7 @@ import {
 import { DateInput } from "@/components/ui/datefield-rac";
 import { Calendar } from "@/components/ui/calendar-rac";
 import { today, parseDate } from "@internationalized/date";
+import { getDefaultNextVisit } from "@renderer/lib/utils";
 
 export function PrescriptionForm({
   prescriptionId,
@@ -72,6 +73,13 @@ export function PrescriptionForm({
       return updated;
     });
   };
+  // Set default nextVisit only if not already set
+  useEffect(() => {
+    if (!prescriptionData.nextVisit) {
+      const def = getDefaultNextVisit();
+      handleChange("nextVisit", def.toString()); // save in ISO format
+    }
+  }, []);
 
   return (
     <div className="flex h-screen">
@@ -173,16 +181,15 @@ export function PrescriptionForm({
                 <AccordionContent>
                   <DatePicker
                     value={
-                      prescriptionData.nextVisit
+                      prescriptionData.nextVisit === ""
                         ? parseDate(prescriptionData.nextVisit)
-                        : today("UTC").add({ days: 7 }) // ✔ default = today + 7 days
+                        : getDefaultNextVisit() // use default 7-days-ahead (skips Sunday)
                     }
                     onChange={(dateValue) => {
                       if (!dateValue) {
                         handleChange("nextVisit", "");
                       } else {
-                        // CalendarDate → "YYYY-MM-DD"
-                        const iso = dateValue.toString();
+                        const iso = dateValue.toString(); // CalendarDate → YYYY-MM-DD
                         handleChange("nextVisit", iso);
                       }
                     }}

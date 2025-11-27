@@ -77,7 +77,7 @@ export function PrescriptionForm({
   useEffect(() => {
     if (!prescriptionData.nextVisit) {
       const def = getDefaultNextVisit();
-      handleChange("nextVisit", def.toString()); // save in ISO format
+      handleChange("nextVisit", def.toString());
     }
   }, []);
 
@@ -181,16 +181,16 @@ export function PrescriptionForm({
                 <AccordionContent>
                   <DatePicker
                     value={
-                      prescriptionData.nextVisit === ""
-                        ? parseDate(prescriptionData.nextVisit)
-                        : getDefaultNextVisit() // use default 7-days-ahead (skips Sunday)
+                      prescriptionData.nextVisit
+                        ? parseDate(prescriptionData.nextVisit) // ✔ Show updated saved date
+                        : getDefaultNextVisit() // ✔ Show 7-days-ahead initially
                     }
                     onChange={(dateValue) => {
                       if (!dateValue) {
                         handleChange("nextVisit", "");
                       } else {
-                        const iso = dateValue.toString(); // CalendarDate → YYYY-MM-DD
-                        handleChange("nextVisit", iso);
+                        const iso = dateValue.toString(); // CalendarDate → 'YYYY-MM-DD'
+                        handleChange("nextVisit", iso); // ✔ Save updated date
                       }
                     }}
                     className="*:not-first:mt-2"

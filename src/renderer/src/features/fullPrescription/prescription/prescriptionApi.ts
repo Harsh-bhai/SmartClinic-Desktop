@@ -18,7 +18,7 @@ export interface Prescription {
   };
   examinationFindings: string;
   advice: string;
-  nextVisit: string;
+  nextVisit?: string;
 }
 
 

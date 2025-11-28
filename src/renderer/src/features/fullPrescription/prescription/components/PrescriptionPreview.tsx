@@ -9,9 +9,8 @@ import { Prescription } from "../prescriptionApi";
 // check and calculate and serach sms cost
 // check eka.care website for inspiration of prescription page
 //TODO - hindi text
-// check chatgpt for placeholder not working
-// testing of nextvisit date component is needed
 // default date 7 days from today is added in nextvisit but check for sunday and holiday
+// remove draft of appointment id from localstorage when last submit happens
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;

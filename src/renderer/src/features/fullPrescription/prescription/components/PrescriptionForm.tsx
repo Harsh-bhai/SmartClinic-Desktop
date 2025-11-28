@@ -47,11 +47,14 @@ export function PrescriptionForm({
   const [activeTab, setActiveTab] = useState("details");
   const dispatch = useAppDispatch();
 
-  const draft = useAppSelector((state) => state.prescription.draft);
+  
   const selectedAppointment = useAppSelector(
     (state) => state.appointments.selectedAppointment,
   );
-
+  
+  const draft = useAppSelector(
+    (state) => state.prescription.drafts[selectedAppointment?.id || ""],
+  );
   const [prescriptionData, setPrescriptionData] = useState<Prescription>(
     draft || {
       patientId: selectedAppointment?.patientId,
@@ -66,17 +69,25 @@ export function PrescriptionForm({
     },
   );
 
+
   const handleChange = (field: keyof Prescription, value: any) => {
     setPrescriptionData((prev) => {
       const updated = { ...prev, [field]: value };
-      dispatch(setDraftPrescription(updated));
+      dispatch(
+        setDraftPrescription({
+          appointmentId: selectedAppointment?.id!,
+          data: updated,
+        }),
+      );
+
       return updated;
     });
   };
   // Set default nextVisit only if not already set
   useEffect(() => {
-    if (!prescriptionData.nextVisit) {
+    if (prescriptionData.nextVisit === "") {
       const def = getDefaultNextVisit();
+      console.log(def.toString(), "def");
       handleChange("nextVisit", def.toString());
     }
   }, []);

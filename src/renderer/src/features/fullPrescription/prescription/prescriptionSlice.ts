@@ -91,7 +91,7 @@ export const deletePrescription = createAsyncThunk(
 export interface PrescriptionState {
   list: Prescription[];
   selectedPrescription: Prescription | null;
-  draft: Prescription | null; // <-- ADD THIS
+  drafts: Record<string, Prescription>;
   loading: boolean;
   error: string | null;
 }
@@ -99,7 +99,7 @@ export interface PrescriptionState {
 const initialState: PrescriptionState = {
   list: [],
   selectedPrescription: null,
-  draft: null,
+  drafts: {},
   loading: false,
   error: null,
 };
@@ -115,8 +115,20 @@ const prescriptionSlice = createSlice({
     setSelectedPrescription(state, action: PayloadAction<Prescription | null>) {
       state.selectedPrescription = action.payload;
     },
-    setDraftPrescription(state, action: PayloadAction<Prescription | null>) {
-      state.draft = action.payload;
+    setDraftPrescription(
+      state,
+      action: PayloadAction<{
+        appointmentId: string;
+        data: Prescription | null;
+      }>,
+    ) {
+      const { appointmentId, data } = action.payload;
+
+      if (data === null) {
+        delete state.drafts[appointmentId];
+      } else {
+        state.drafts[appointmentId] = data;
+      }
     },
   },
 
@@ -187,7 +199,7 @@ export const { setSelectedPrescription, setDraftPrescription } =
 const persistConfig = {
   key: "prescription",
   storage,
-  whitelist: ["draft"],
+  whitelist: ["drafts"],
 };
 
 export const prescriptionReducer = persistReducer(

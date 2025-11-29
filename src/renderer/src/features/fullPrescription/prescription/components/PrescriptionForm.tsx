@@ -206,8 +206,6 @@ export function PrescriptionForm({
                     }}
                     className="*:not-first:mt-2"
                   >
-                    <Label className="text-sm font-medium">Select Date</Label>
-
                     <div className="flex">
                       <Group className="w-full">
                         <DateInput className="pe-9" />

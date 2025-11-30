@@ -12,6 +12,7 @@ export async function createAppointment(data) {
 
   // Create appointment
   const result = await db.insert(appointments).values(data).returning();
+  console.log("result", result, "data", data);
 
   // Return with patient details if available
   return {

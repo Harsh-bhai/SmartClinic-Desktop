@@ -11,10 +11,8 @@ export const patients = sqliteTable("patients", {
   gender: text("gender").notNull(),
   phone: text("phone"),
   address: text("address"),
-  medicalHistory: text("medical_history").default("No known history"),
   lifestyleHabits: text("lifestyle_habits").default("No addiction as per patient"),
   drugAllergies: text("drug_allergies").default("No known drug allergies"),
-
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -47,7 +45,6 @@ export const prescriptions = sqliteTable("prescription", {
   symptoms: text("symptoms"),
   notes: text("notes"),
   vitals: blob("vitals", { mode: "json" }),
-  // 👨‍⚕️ Examination findings (G/E, CVS, R/S, etc.)
   examinationFindings: blob("examination_findings", { mode: "json" }),
   advice: text("advice"),
   nextVisit: text("next_visit"),
@@ -77,10 +74,11 @@ export const prescribedMedicines = sqliteTable("prescribed_medicines", {
   medicineId: text("medicine_id").references(() => medicineInventory.id),
   name: text("name").notNull(),
   dose: text("dose").notNull(),
-  frequency: blob("frequency", { mode: "json" }).notNull(),
+  frequency: text("frequency").notNull(),
   duration: text("duration").notNull(),
-  timing: text("timing"),
+  timing: text("timing"), // before meal, after meal
   remarks: text("remarks"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  
 });

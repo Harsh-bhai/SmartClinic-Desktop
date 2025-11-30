@@ -9,7 +9,6 @@ export interface Prescription {
   complain?: string;
   symptoms?: string;
   notes: string;
-  medicalHistory?: string;
   vitals: {
     temperature?: string;
     pulseRate?: string;

@@ -5,11 +5,16 @@ import { useTheme } from "@/components/provider/ThemeProvider";
 import { useAppSelector } from "@renderer/app/hooks";
 import { Prescription } from "../prescriptionApi";
 
-//FIXME - persist prescription data, save it in database, create medicines section, create: floating bar in the box containg buttons(dropdown) like previous prescription, preious page(^), next page(v), pages (1/20), in the next visit section, add a date picker for next visit
+//FIXME - Fetch multiple appointments, made floating bar ui, download functionality not working
 // check and calculate and serach sms cost
-// check eka.care website for inspiration of prescription page
+
 //TODO - hindi text
 // remove draft of appointment id from localstorage when last submit happens
+//TODO - medicines tab
+
+//FIXME - arrived, queuenumber should be saved in database so that another pc can see it real time, cuz redux stores it in client side
+
+//FIXME - appointment.service.js fetchtoday appointment is throwing error, fix that by creating a good prompt from previous chats with gpt
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;

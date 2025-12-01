@@ -38,7 +38,10 @@ export async function createAppointmentByBulk(dataArray) {
     data.createdAt = getLocalDateTimeString();
     data.updatedAt = getLocalDateTimeString();
 
-    const result = await db.insert(appointments).values(data.appointments).returning();
+    const result = await db
+      .insert(appointments)
+      .values(data.appointments)
+      .returning();
 
     created.push({
       ...result[0],
@@ -95,6 +98,11 @@ export async function getTodayAppointments() {
   const start = `${today} 00:00:00`;
   const end = `${today} 23:59:59`;
 
+  console.log("Checking range:", { start, end });
+
+  const raw = await db.select().from(appointments);
+  console.log("All appointments:", raw);
+
   const results = await db
     .select({
       id: appointments.id,
@@ -117,7 +125,9 @@ export async function getTodayAppointments() {
     })
     .from(appointments)
     .leftJoin(patients, eq(appointments.patientId, patients.id))
-    .where(and(gte(appointments.createdAt, start), lte(appointments.createdAt, end)))
+    .where(
+      and(gte(appointments.createdAt, start), lte(appointments.createdAt, end)),
+    )
     .orderBy(appointments.createdAt);
 
   return results;
@@ -233,7 +243,10 @@ export async function updateAppointment(id, data) {
  🗑️ DELETE SINGLE APPOINTMENT
 ------------------------------------------------------- */
 export async function deleteAppointment(id) {
-  const result = await db.delete(appointments).where(eq(appointments.id, id)).returning();
+  const result = await db
+    .delete(appointments)
+    .where(eq(appointments.id, id))
+    .returning();
   return result[0];
 }
 

@@ -37,13 +37,14 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { ExtendedAppointment } from "@/features/appointments/appointmentSlice";
+
 import { UpdateAppointmentDialog } from "./UpdateAppointmentDialog";
 import { Link } from "react-router-dom";
+import { Appointment } from "../appointmentApi";
 
 interface AppointmentTableProps {
-  newAppointments?: ExtendedAppointment[];
-  completedAppointments?: ExtendedAppointment[];
+  newAppointments?: Appointment[];
+  completedAppointments?: Appointment[];
   loading?: boolean;
 }
 
@@ -52,6 +53,8 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
   completedAppointments = [],
   loading = false,
 }) => {
+  console.log("new appointments", newAppointments);
+  
   const dispatch = useAppDispatch();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -72,14 +75,14 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
     }
   };
 
-  const handleEdit = (appointment: ExtendedAppointment) => {
+  const handleEdit = (appointment: Appointment) => {
     console.log(appointment, "here");
     
     dispatch(setSelectedAppointment(appointment));
     setDialogOpen(true);
   };
 
-  const handlePrescription = (appointment: ExtendedAppointment) => {
+  const handlePrescription = (appointment: Appointment) => {
     dispatch(setSelectedAppointment(appointment));
   };
 
@@ -96,7 +99,7 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
   };
 
   const renderRow = (
-    appointment: ExtendedAppointment,
+    appointment: Appointment,
     index: number,
     isCompleted = false,
   ) => (

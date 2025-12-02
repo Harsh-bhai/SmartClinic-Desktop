@@ -9,6 +9,8 @@ export interface Appointment {
   treatmentStatus: string;
   paidStatus: boolean;
   paid: number;
+  queueNumber: number;
+  arrived: boolean;
   createdAt?: string;
   updatedAt?: string;
   patientId: string;

@@ -5,20 +5,18 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { PlusCircleIcon, Search } from "lucide-react";
 import {
   AppointmentTable,
   AddAppointmentDialog,
 } from "@/features/appointments";
 import {
-  ExtendedAppointment,
   fetchAppointments,
   fetchExistingPatients,
   setSelectedAppointment,
 } from "@/features/appointments/appointmentSlice";
-import { ModifiedSearch } from "@renderer/components/modifiedSearch";
 import { ExistingPatientSearch } from "./components/ExistingPatientSearch";
+import { Appointment } from "./appointmentApi";
 
 const AppointmentPage = () => {
   const dispatch = useAppDispatch();
@@ -109,7 +107,7 @@ const AppointmentPage = () => {
               setSelectedAppointment({
                 ...patient,
                 patientId: patient.id,
-              } as ExtendedAppointment),
+              } as Appointment),
             );
             setDialogOpen(true);
           }}

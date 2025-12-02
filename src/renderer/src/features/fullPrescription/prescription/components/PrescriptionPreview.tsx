@@ -13,8 +13,9 @@ import { Prescription } from "../prescriptionApi";
 //TODO - medicines tab
 
 //FIXME - arrived, queuenumber should be saved in database so that another pc can see it real time, cuz redux stores it in client side
+//TODO - need to add arrvied and queue number in appointment.service.js
+//FIXME - Appointment feature bugs: completed appointments are still showing in new appointmnets tab, check complete appointments queuenumber is correct or not
 
-//FIXME - appointment.service.js fetchtoday appointment is throwing error, fix that by creating a good prompt from previous chats with gpt
 
 interface PrescriptionPreviewProps {
   prescriptionId: string;

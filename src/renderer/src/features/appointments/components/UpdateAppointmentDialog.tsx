@@ -22,12 +22,12 @@ import { useAppDispatch } from "@/app/hooks";
 import {
   updateAppointment,
 } from "@/features/appointments/appointmentSlice";
-import type { ExtendedAppointment } from "@/features/appointments/appointmentSlice";
+import { Appointment } from "../appointmentApi";
 
 interface UpdateAppointmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPatient?: ExtendedAppointment | null;
+  selectedPatient?: Appointment | null;
 }
 
 const UpdateAppointmentDialog: React.FC<UpdateAppointmentDialogProps> = ({
@@ -37,7 +37,7 @@ const UpdateAppointmentDialog: React.FC<UpdateAppointmentDialogProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
-  const [formData, setFormData] = useState<ExtendedAppointment>({
+  const [formData, setFormData] = useState<Appointment>({
     id: "",
     patientId: "",
     name: "",

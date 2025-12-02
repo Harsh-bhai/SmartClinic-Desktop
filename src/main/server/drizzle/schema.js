@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer, blob } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
-// TODO - use zod schema in express  
+// TODO - use zod schema in express
 
 // 🧍 Patients Table
 export const patients = sqliteTable("patients", {
@@ -11,7 +11,9 @@ export const patients = sqliteTable("patients", {
   gender: text("gender").notNull(),
   phone: text("phone"),
   address: text("address"),
-  lifestyleHabits: text("lifestyle_habits").default("No addiction as per patient"),
+  lifestyleHabits: text("lifestyle_habits").default(
+    "No addiction as per patient",
+  ),
   drugAllergies: text("drug_allergies").default("No known drug allergies"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
@@ -23,10 +25,11 @@ export const appointments = sqliteTable("appointment", {
   patientId: text("patient_id")
     .notNull()
     .references(() => patients.id),
-  paidStatus: integer("paid_status", { mode: "boolean" })
-    .notNull()
-    .default(0),
+  paidStatus: integer("paid_status", { mode: "boolean" }).notNull().default(0),
+
   paid: integer("paid").notNull().default(0),
+  arrived: integer("arrived", { mode: "boolean" }).notNull().default(0),
+  queueNumber: integer("queue_number").notNull().default(0),
   treatmentStatus: text("treatment").notNull().default("pending"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
@@ -80,5 +83,4 @@ export const prescribedMedicines = sqliteTable("prescribed_medicines", {
   remarks: text("remarks"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-  
 });

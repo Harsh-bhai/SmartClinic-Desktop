@@ -12,7 +12,6 @@ export async function createAppointment(data) {
 
   // Create appointment
   const result = await db.insert(appointments).values(data).returning();
-  console.log("result", result, "data", data);
 
   // Return with patient details if available
   return {
@@ -22,7 +21,6 @@ export async function createAppointment(data) {
     gender: data.gender,
     phone: data.phone,
     address: data.address,
-    medicalHistory: data?.medicalHistory ?? "",
     lifestyleHabits: data?.lifestyleHabits ?? "",
     drugAllergies: data?.drugAllergies ?? "",
   };
@@ -50,7 +48,6 @@ export async function createAppointmentByBulk(dataArray) {
       gender: data.gender,
       phone: data.phone,
       address: data.address,
-      medicalHistory: data?.medicalHistory ?? "",
       lifestyleHabits: data?.lifestyleHabits ?? "",
       drugAllergies: data?.drugAllergies ?? "",
     });
@@ -79,7 +76,6 @@ export async function getAllAppointments() {
       gender: patients.gender,
       phone: patients.phone,
       address: patients.address,
-      medicalHistory: patients.medicalHistory,
       lifestyleHabits: patients.lifestyleHabits,
       drugAllergies: patients.drugAllergies,
     })
@@ -98,11 +94,6 @@ export async function getTodayAppointments() {
   const start = `${today} 00:00:00`;
   const end = `${today} 23:59:59`;
 
-  console.log("Checking range:", { start, end });
-
-  const raw = await db.select().from(appointments);
-  console.log("All appointments:", raw);
-
   const results = await db
     .select({
       id: appointments.id,
@@ -119,7 +110,6 @@ export async function getTodayAppointments() {
       gender: patients.gender,
       phone: patients.phone,
       address: patients.address,
-      medicalHistory: patients.medicalHistory,
       lifestyleHabits: patients.lifestyleHabits,
       drugAllergies: patients.drugAllergies,
     })
@@ -153,7 +143,6 @@ export async function getAppointmentById(id) {
       gender: patients.gender,
       phone: patients.phone,
       address: patients.address,
-      medicalHistory: patients.medicalHistory,
       lifestyleHabits: patients.lifestyleHabits,
       drugAllergies: patients.drugAllergies,
     })
@@ -184,7 +173,6 @@ export async function getAppointmentsByPatientId(patientId) {
       gender: patients.gender,
       phone: patients.phone,
       address: patients.address,
-      medicalHistory: patients.medicalHistory,
       lifestyleHabits: patients.lifestyleHabits,
       drugAllergies: patients.drugAllergies,
     })
@@ -210,7 +198,6 @@ export async function updateAppointment(id, data) {
     gender: data.gender,
     phone: data.phone,
     address: data.address,
-    medicalHistory: data?.medicalHistory ?? "",
     lifestyleHabits: data?.lifestyleHabits ?? "",
     drugAllergies: data?.drugAllergies ?? "",
   };

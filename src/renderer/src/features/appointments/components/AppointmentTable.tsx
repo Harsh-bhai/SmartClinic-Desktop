@@ -53,7 +53,6 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({
   completedAppointments = [],
   loading = false,
 }) => {
-  console.log("new appointments", newAppointments);
   
   const dispatch = useAppDispatch();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

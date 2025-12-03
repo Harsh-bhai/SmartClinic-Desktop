@@ -252,6 +252,9 @@ const appointmentSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(fetchExistingPatients.fulfilled, (state, action) => {
+        state.existingPatients = action.payload;
+      })
 
       // Create appointment
       .addCase(createAppointment.fulfilled, (state, action) => {

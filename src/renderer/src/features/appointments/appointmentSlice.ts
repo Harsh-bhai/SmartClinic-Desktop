@@ -197,6 +197,10 @@ const appointmentSlice = createSlice({
       if (!appt) return;
 
       appt.arrived = !appt.arrived;
+      updateAppointment({
+        ...appt,
+        arrived: appt.arrived,
+      });
 
       // Re-sort: arrived first, then queueNumber
       state.newAppointments.sort((a, b) => {
@@ -236,12 +240,19 @@ const appointmentSlice = createSlice({
 
         const fetched = action.payload;
 
-        const sorted = fetched.sort((a, b) => {
+        const active = fetched.filter((a) => a.treatmentStatus !== "complete");
+        const completed = fetched.filter(
+          (a) => a.treatmentStatus === "complete",
+        );
+
+        state.newAppointments = active.sort((a, b) => {
           if (a.arrived === b.arrived) return a.queueNumber - b.queueNumber;
           return a.arrived ? -1 : 1;
         });
-
-        state.newAppointments = rebuildQueueNumbers(sorted);
+        state.completedAppointments = completed.sort((a, b) => {
+          if (a.arrived === b.arrived) return a.queueNumber - b.queueNumber;
+          return a.arrived ? -1 : 1;
+        });
 
         state.completedAppointments = fetched
           .filter((a) => a.treatmentStatus === "complete")
